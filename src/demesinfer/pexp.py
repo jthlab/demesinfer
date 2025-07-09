@@ -1,0 +1,126 @@
+from numbers import Number
+from typing import NamedTuple
+
+import equinox as eqx
+import jax.numpy as jnp
+from jax import vmap
+from jaxtyping import Array, Float
+
+
+class PExp(NamedTuple):
+    """Piecewise exponential rate function.
+
+    This represents the function
+
+        eta(t) = N0[i] (N1[i] / N0[i])^[(t-t[i])/(t[i+1]-t[i])] for t_i <= t < t_{i+1}
+
+    i.e. eta(t[i])=N0[i], eta(t[i+1])=N1[i], and eta(t) is exponential between t[i] and t[i+1].
+
+    Args:
+        N0, N1: positive arrays of shape [T] corresponding to the formula shown above.
+        t: positive array of shape [T + 1] corresponding to t_i in the formula shown above.
+    """
+
+    N0: Float[Array, "..."]
+    N1: Float[Array, "..."]
+    t: Float[Array, "..."]
+
+    @property
+    def a(self):
+        "eta(t) = a[i] exp(-(t[i + 1] - t)) b[i]) = 1 / (2 Ne(t))"
+        return 1 / 2 / self.N1
+
+    @property
+    def b(self):
+        "eta(t) = a[i] exp(-(t[i + 1]-t) b[i]) = 1 / (2 Ne(t))"
+        # eta(t[i]) = a[i] exp(-b[i] dt[i]) = 1 / 2 / self.N0 =>
+        return -jnp.log(1 / 2 / self.N0 / self.a) / jnp.diff(self.t)
+
+    def __call__(self, u: Float[Array, ""], _no_searchsorted=False):
+        r"Evaluate eta(u)."
+        t = self.t
+
+        if _no_searchsorted:
+            mask = (t[:-1] <= u) & (u < t[1:])
+            ti = t[:-1].dot(mask)
+            ti1 = t[1:].dot(mask)
+            N0i = self.N0.dot(mask)
+            N1i = self.N1.dot(mask)
+
+            # prevent annoying boundary effect
+            last = jnp.isclose(u, t[-1])
+            ti = jnp.where(last, t[-2], ti)
+            ti1 = jnp.where(last, t[-1], ti1)
+            N0i = jnp.where(last, self.N0[-2], N0i)
+            N1i = jnp.where(last, self.N1[-2], N1i)
+        else:
+            i = jnp.maximum(jnp.searchsorted(t, u) - 1, 0)  # t[j] <= u < t[j + 1]
+            ti = t[i]
+            ti1 = t[i + 1]
+            N0i = self.N0[i]
+            N1i = self.N1[i]
+        # i = jnp.searchsorted(t, u) - 1
+        # i = jnp.where(i >= 0, i, 0)  # t[j] <= u < t[j + 1]
+        ti1_safe = jnp.where(jnp.isinf(ti1), ti + 1.0, ti1)
+        x = (ti1_safe - u) / (ti1_safe - ti)
+        ret = jnp.where(jnp.isinf(ti1), N0i, N1i * (N0i / N1i) ** x)
+        ret = eqx.error_if(ret, jnp.isnan(ret), "NaN in eta")
+        return ret
+
+    def R(self, u: Number | Float[Array, ""]):
+        r"Evaluate R(u) = \int_t[0]^u eta(s) ds"
+        a = self.a
+        b = self.b
+        t = self.t
+        dt = jnp.diff(jnp.minimum(u, t))
+        ui = jnp.where(u < t[:-1], t[:-1], jnp.where(t[1:] < u, t[1:], u))
+        const = jnp.isclose(self.N0, self.N1)
+        b_safe = jnp.where(const, 1.0, b)
+
+        t1_safe = jnp.where(const, 1.0, t[1:])
+        ui_safe = jnp.where(const, 1.0, ui)
+        dt_safe = jnp.where(const, 1.0, dt)
+        integrals = (
+            # a / b_safe * jnp.exp(-b_safe * (t[1:] - ui)) * -jnp.expm1(-b_safe * dt)
+            a
+            / b_safe
+            * jnp.exp(-b_safe * (t1_safe - ui_safe))
+            * -jnp.expm1(-b_safe * dt_safe)
+        )
+        integrals = jnp.where(const, a * dt, integrals)
+        return integrals.sum()
+
+    def exp_integral(self, t0: float, t1: float, c: float = 1.0):
+        r"""Compute the integral $\int_t0^t1 exp[-c * (R(t) - R(t0))] dt$ for $R(t) = \int_0^s eta(s) ds$.
+
+        Args:
+            c: The constant multiplier of R(t) in the integral.
+        Returns:
+            The value of the integral.
+        """
+        Rt0 = self.R(t0)
+
+        def f(N0i, N1i, ti, ti1):
+            # \int_ti^ti1 exp(-c R(t)) dt
+            # = \int_ti^ti1 exp(-c R(ti) - c \int_ti^t eta(s) ds) dt
+            # = \int_ti^ti1 exp(-c R(ti) - c \int_ti^t (1/2N0) ds) dt, if N0=N1
+            # = exp(-c R(ti)) \int_ti^ti1 exp(-c (t - ti) (1/2N0) ds) dt
+            # = exp(-c R(ti)) (N0/c) -expm1(-c / N0) dt)
+            ti1_safe = jnp.where(jnp.isinf(ti1), 2 * ti, ti1)
+            i1 = (
+                jnp.exp(-c * (self.R(ti) - Rt0))
+                * (2 * N0i / c)
+                * jnp.where(
+                    jnp.isinf(ti1), 1.0, -jnp.expm1(-c / (2 * N0i) * (ti1_safe - ti))
+                )
+            )
+            x1 = jnp.linspace(ti, ti1_safe, 1000)
+            x2 = jnp.linspace(x1[1], x1[-1], 1000)
+            x = jnp.sort(jnp.concatenate([x1, x2]))
+            i2 = jnp.trapezoid(jnp.exp(-c * (vmap(self.R)(x) - Rt0)), x)
+            # ti1 might be +inf, but in that case we assume that N0i=N1i
+            # (constant growth in last epoch)
+            return jnp.where(jnp.isclose(N0i, N1i) | jnp.isinf(ti1), i1, i2)
+
+        tm = self.t.clip(t0, t1)
+        return vmap(f)(self.N0, self.N1, tm[:-1], tm[1:]).sum()

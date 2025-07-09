@@ -1,9 +1,12 @@
 import jax.numpy as jnp
+from jaxtyping import Scalar
 
 from .pexp import PExp
 
 
-def migration_rate(demo: dict, source: str, dest: str, t: float) -> float:
+def migration_rate(
+    demo: dict, source: str, dest: str, t: Scalar | float
+) -> Scalar | float:
     ret = 0.0
     for m in demo["migrations"]:
         if m["source"] == source and m["dest"] == dest:

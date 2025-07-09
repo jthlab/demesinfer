@@ -2,17 +2,16 @@ from dataclasses import dataclass, field
 
 import demes
 import equinox as eqx
+import jax
 import jax.numpy as jnp
-from beartype import beartype
-from jaxtyping import Array, Float, jaxtyped
+from jaxtyping import Array, Float, Scalar, jaxtyped
 
 import demesinfer.drivers.iicr.events as events
 import demesinfer.event_tree as event_tree
-from demesinfer.path import Path, bind
+from demesinfer.path import Path, Value, bind
 from demesinfer.traverse import traverse
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass
 class IICRCurve:
     demo: demes.Graph
@@ -32,7 +31,7 @@ class IICRCurve:
             self._et,
             setup_state,
             node_callback=lambda node, node_attrs, **kw: node_attrs["event"].setup(
-                demo=self.demo, **kw
+                demo=self.demo.asdict(), **kw
             ),
             lift_callback=events.setup_lift,
             aux=None,
@@ -41,10 +40,10 @@ class IICRCurve:
 
     def __call__(
         self,
-        t: Float[Array, "T"],
-        num_samples: dict[str, int],
-        params: dict[Path, float],
-    ) -> tuple[Float[Array, "T"], Float[Array, "T"]]:
+        params: dict[Path, float | Scalar],
+        t: Float[Array, "*T"],
+        num_samples: dict[str, Scalar | int],
+    ) -> dict[str, Float[Array, "*T"]]:
         pops = {pop.name for pop in self.demo.demes}
         assert num_samples.keys() <= pops, (
             "num_samples must contain only deme names from the demo, found {} which is not in {}".format(
@@ -52,26 +51,26 @@ class IICRCurve:
             )
         )
         state = _call(
-            t,
+            jnp.atleast_1d(t),
             k=self.k,
             demo=bind(self.demo.asdict(), params),
             et=self._et,
             aux=self._aux,
             num_samples=num_samples,
         )
-        return dict(c=state.c, log_s=state.log_s)
+        ret = dict(c=state.c, log_s=state.log_s)
+        return jax.tree.map(lambda a: a.reshape(t.shape), ret)
 
 
 @eqx.filter_jit
 @eqx.filter_vmap(in_axes=(0,) + (None,) * 5)
-@jaxtyped(typechecker=beartype)
 def _call(
     t: Float[Array, ""],
     /,
     et: event_tree.EventTree,
     k: int,
     demo: dict,
-    num_samples: dict[str, int],
+    num_samples: dict[str, int | Scalar],
     aux: dict,
 ):
     """Call the IICR curve with a time and number of samples."""

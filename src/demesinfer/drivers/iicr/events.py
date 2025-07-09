@@ -24,7 +24,6 @@ class SetupState(NamedTuple):
 NoOp = events.NoOp
 
 
-@jaxtyped(typechecker=beartype)
 class State(NamedTuple):
     # p is an (d,)*n  array denoting the joint probability that each of N lineages is
     # in each of D demes.
@@ -39,17 +38,19 @@ class State(NamedTuple):
         assert p.shape[0] == 1 + len(self.pops)
 
 
-@jaxtyped(typechecker=beartype)
+StateReturn = tuple[State, dict]
+SetupReturn = tuple[SetupState, dict]
+
+
 def setup_lift(
     state: SetupState, t0: Path, t1: Path, terminal: bool, aux: dict
 ) -> tuple[SetupState, dict]:
     return state, dict(migrations=state.migrations)
 
 
-@jaxtyped(typechecker=beartype)
 def lift(
     state: State, t0: Path, t1: Path, terminal: bool, demo: dict, aux: dict
-) -> tuple[State, dict]:
+) -> StateReturn:
     """Lift partial likelihood.
 
     Args:
@@ -79,7 +80,6 @@ def lift(
     return state, aux
 
 
-@jaxtyped(typechecker=beartype)
 def _lift_partitioned(
     state_c: State,
     state_nc: State,
@@ -88,7 +88,7 @@ def _lift_partitioned(
     terminal: bool,
     demo: dict,
     aux: dict,
-) -> tuple[State, dict]:
+) -> StateReturn:
     """Lift partial likelihood.
 
     Args:
@@ -199,7 +199,7 @@ def _lift_partitioned(
     y0 = (state.p, 0.0)
 
     # if f has error, this will throw more comprehensibly than doing it inside of diffeqsolve
-    # y1 = f(t0, y0, args)
+    y1 = f(t0, y0, args)
 
     res = dfx.diffeqsolve(
         term,
@@ -226,21 +226,17 @@ def _lift_partitioned(
     return state_c, {}
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class PopulationStart(events.PopulationStart):
     pass
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class Split1(events.Split1):
-    def setup(
-        self, demo: dict, aux: dict, child_state: SetupState
-    ) -> tuple[SetupState, dict]:
+    def setup(self, demo: dict, aux: dict, child_state: SetupState) -> SetupReturn:
         return child_state, {}
 
-    def __call__(self, demo: dict, aux: dict, child_state: State) -> State:
+    def __call__(self, demo: dict, aux: dict, child_state: State) -> StateReturn:
         pops = child_state.pops
         assert self.donor in pops
         assert self.recipient in pops
@@ -253,7 +249,6 @@ class Split1(events.Split1):
         return child_state._replace(pops=pops, p=p_prime), {}
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class Split2(events.Split2):
     def setup(
@@ -262,13 +257,13 @@ class Split2(events.Split2):
         aux: dict,
         donor_state: SetupState,
         recipient_state: SetupState,
-    ) -> tuple[SetupState, dict]:
+    ) -> SetupReturn:
         mig = donor_state.migrations | recipient_state.migrations
         return SetupState(migrations=mig), {}
 
     def __call__(
         self, demo: dict, aux: dict, donor_state: State, recipient_state: State
-    ) -> State:
+    ) -> StateReturn:
         """Merge two populations in different event blocks.
 
         Args:
@@ -292,16 +287,17 @@ class Split2(events.Split2):
         ), {}
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class Merge(events.Merge):
     def setup(
         self, demo: dict, aux: dict, pop1_state: SetupState, pop2_state: SetupState
-    ) -> tuple[SetupState, dict]:
+    ) -> SetupReturn:
         mig = pop1_state.migrations | pop2_state.migrations
         return SetupState(migrations=mig), {}
 
-    def __call__(self, demo: dict, aux: dict, pop1_state: State, pop2_state) -> State:
+    def __call__(
+        self, demo: dict, aux: dict, pop1_state: State, pop2_state
+    ) -> StateReturn:
         # merge the two population tensors into one
         # an empty/scalar tensor represents one deme with no lineages
         p_prime = _product(pop1_state.p, pop2_state.p)
@@ -314,39 +310,32 @@ class Merge(events.Merge):
         ), {}
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class MigrationStart(events.MigrationStart):
-    def setup(
-        self, demo: dict, aux: dict, child_state: SetupState
-    ) -> tuple[SetupState, dict]:
+    def setup(self, demo: dict, aux: dict, child_state: SetupState) -> SetupReturn:
         mig = child_state.migrations | {(self.source, self.dest)}
         return SetupState(migrations=mig), {}
 
-    def __call__(self, demo: dict, aux: dict, child_state: State) -> State:
+    def __call__(self, demo: dict, aux: dict, child_state: State) -> StateReturn:
         return child_state, {}
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class MigrationEnd(events.MigrationEnd):
-    def setup(self, demo: dict, aux: dict, child_state: SetupState) -> SetupState:
+    def setup(self, demo: dict, aux: dict, child_state: SetupState) -> SetupReturn:
         mig = child_state.migrations - {(self.source, self.dest)}
         return child_state._replace(migrations=mig), {}
 
-    def __call__(self, demo: dict, aux: dict, child_state: State) -> State:
+    def __call__(self, demo: dict, aux: dict, child_state: State) -> StateReturn:
         return child_state, {}
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class Admix(events.Admix):
-    def setup(
-        self, demo: dict, aux: dict, child_state: SetupState
-    ) -> tuple[SetupState, dict]:
+    def setup(self, demo: dict, aux: dict, child_state: SetupState) -> SetupReturn:
         return child_state, {}
 
-    def __call__(self, demo: dict, aux: dict, child_state: State) -> State:
+    def __call__(self, demo: dict, aux: dict, child_state: State) -> StateReturn:
         p_admix = self.prop_fun(demo)
         # child splits into self.parent1 and self.parent2
         pops = list(child_state.pops)
@@ -358,15 +347,12 @@ class Admix(events.Admix):
         return child_state._replace(p=p_prime, pops=tuple(pops)), {}
 
 
-@jaxtyped(typechecker=beartype)
 @dataclass(kw_only=True)
 class Pulse(events.Pulse):
-    def setup(
-        self, demo: dict, aux: dict, child_state: SetupState
-    ) -> tuple[SetupState, dict]:
+    def setup(self, demo: dict, aux: dict, child_state: SetupState) -> SetupReturn:
         return child_state, {}
 
-    def __call__(self, demo: dict, aux: dict, child_state) -> State:
+    def __call__(self, demo: dict, aux: dict, child_state) -> StateReturn:
         p_pulse = self.prop_fun(demo)
         pops = list(child_state.pops)
         i = pops.index(self.dest)
