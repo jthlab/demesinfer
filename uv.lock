@@ -142,9 +142,9 @@ dev = [
 requires-dist = [
     { name = "beartype", specifier = ">=0.21.0" },
     { name = "demes", specifier = ">=0.2.3" },
-    { name = "diffrax", git = "https://github.com/patrick-kidger/diffrax" },
-    { name = "equinox", specifier = ">=0.12.2" },
-    { name = "interpax", specifier = ">=0.3.9" },
+    { name = "diffrax" },
+    { name = "equinox", specifier = ">=0.13" },
+    { name = "interpax", git = "https://github.com/f0uriest/interpax?rev=dependabot%2Fpip%2Fequinox-gte-0.11.0-and-lt-0.14" },
     { name = "jax", specifier = ">=0.6.2" },
     { name = "jax", extras = ["cuda12"], marker = "extra == 'gpu'", specifier = ">=0.6.2" },
     { name = "jaxtyping", specifier = ">=0.3.2" },
@@ -168,7 +168,7 @@ dev = [
 [[package]]
 name = "diffrax"
 version = "0.7.0"
-source = { git = "https://github.com/patrick-kidger/diffrax#d3c1430b76e7d0158536823724371d7b26f5db8f" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "equinox" },
     { name = "jax" },
@@ -178,10 +178,14 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "wadler-lindig" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/c9/9e/d6081a1daf7a7b70f53ddac637bd2e6cd6fa91042ffd7b204741c0ce6d44/diffrax-0.7.0.tar.gz", hash = "sha256:f3bcc578cd92a9ca86fc6f5a54c1de76c1ba62f74de69b56002624bf205316f1", size = 151595, upload-time = "2025-03-14T03:52:22.422Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/aa/1d/236424e689f62d7fe58f8b10f08c63a49c68efba087eabdd09198a9bbf38/diffrax-0.7.0-py3-none-any.whl", hash = "sha256:aa9645c40552f11a2d32042ef6b9fcd53c1f0f6bdbe32d37cb788669ca9910be", size = 193163, upload-time = "2025-03-14T03:52:20.943Z" },
+]
 
 [[package]]
 name = "equinox"
-version = "0.12.2"
+version = "0.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jax" },
@@ -189,9 +193,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "wadler-lindig" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4c/1c/da174caa2902cee108a542cfb801bd4366a5e44541b625d5a0984c9238e0/equinox-0.12.2.tar.gz", hash = "sha256:648e4206bbc53b228922e8f18cd3cffe543ddda1172c0002f8954e484bab0023", size = 139007, upload-time = "2025-05-14T09:31:00.072Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/ad/c538b895e3f1290738b7a5eccd9c91b132e6f7ee13958a82ee8e4465f137/equinox-0.13.0.tar.gz", hash = "sha256:d59615be722373e9d66e0ba78462964e6357fb76a8b1b98c2c6027961b778a69", size = 137892, upload-time = "2025-07-07T20:44:24.13Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8e/a7/5961a7cad10df1e165a8b9c4ba0661aaec9497861e53682effa1787d97aa/equinox-0.12.2-py3-none-any.whl", hash = "sha256:0d9c09c077e7895a5334930ddb9ecd7d39840c3ad252cf8262aa8ddc6bb8ae97", size = 177247, upload-time = "2025-05-14T09:30:58.252Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/9a/3d0699b268d9c2794f12e1c202626293170662cd9f7d4f9ad5817d9496f6/equinox-0.13.0-py3-none-any.whl", hash = "sha256:66720e6f39b4907812e2c5912ca523d698293f6f1d25736362b174f426b02c49", size = 177703, upload-time = "2025-07-07T20:44:22.666Z" },
 ]
 
 [[package]]
@@ -239,18 +243,14 @@ wheels = [
 
 [[package]]
 name = "interpax"
-version = "0.3.9"
-source = { registry = "https://pypi.org/simple" }
+version = "0.3.9+1.ga8f9a17"
+source = { git = "https://github.com/f0uriest/interpax?rev=dependabot%2Fpip%2Fequinox-gte-0.11.0-and-lt-0.14#a8f9a171227adbcf81b9e5d6dc8fd73d212fc103" }
 dependencies = [
     { name = "equinox" },
     { name = "jax" },
     { name = "jaxtyping" },
     { name = "lineax" },
     { name = "numpy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/0c/ad/5ca3239ae739a634380af3fde1d1294403b5a07c798360a32d0893f09825/interpax-0.3.9.tar.gz", hash = "sha256:138580b50dbe08420439882fadca91254cd5fa50eddfd1ed59edcfb10b358859", size = 57793, upload-time = "2025-06-19T03:17:07.808Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2b/2b/bb6cd17de2e2cfb078bf28e3457dd3766d01ca6a4963df4f9c817ca4150e/interpax-0.3.9-py3-none-any.whl", hash = "sha256:be10ed78837f87eb5775d58aef29a9fc2ef0617715108cd3819007261e2fda06", size = 27558, upload-time = "2025-06-19T03:17:06.603Z" },
 ]
 
 [[package]]
