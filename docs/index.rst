@@ -7,12 +7,13 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
 
    Introduction <readme>
    Installation <installation>
    Notation <notation>
    Tutorial <tutorial>
+   Optimization <optimization>
    License <license>
    Authors <authors>
    Module Reference <api/modules>

@@ -22,7 +22,7 @@ To get started, import the necessary packages:
     import demes
     import demesdraw
 
-For simplicity, we consider a classic isolation-with-migration (IWM) scenario: two subpopulations (P0 and P1) that split from a common ancestor. All populations are assumed to have constant effective sizes of 5000, and after the split the subpopulations exchange migrants at a symmetric rate of 0.0001.
+For simplicity, we consider a classic isolation-with-migration (IWM) scenario: two subpopulations (P0 and P1) that split from a common ancestor. All populations are assumed to have constant effective sizes of 5000, and after the split the subpopulations exchange migrants at a symmetric rate of 0.0001. We set the split time between the subpopulations and their ancestor to 1000 generations:
 
 .. code-block:: python
 
@@ -31,13 +31,7 @@ For simplicity, we consider a classic isolation-with-migration (IWM) scenario: t
     demo.add_population(initial_size=5000, name="P0")
     demo.add_population(initial_size=5000, name="P1")
     demo.set_symmetric_migration_rate(populations=("P0", "P1"), rate=0.0001)
-    tmp = [f"P{i}" for i in range(2)]
-
-We set the split time between the subpopulations and their ancestor to 1000 generations:
-
-.. code-block:: python
-
-    demo.add_population_split(time=1000, derived=tmp, ancestral="anc")
+    demo.add_population_split(time=1000, derived=[f"P{i}" for i in range(2)], ancestral="anc")
 
 We can visualize the demographic model using ``demesdraw``:
 
@@ -50,7 +44,7 @@ We can visualize the demographic model using ``demesdraw``:
    :alt: Demographic model visualization
    :align: center
 
-Next, we simulate the ancestry of 20 individuals sampled from the two subpopulations using ``msprime.sim_ancestry()``.  
+Next, we simulate the ancestry of 10 diploid individuals sampled from the two subpopulations using ``msprime.sim_ancestry()``.  
 We use a mutation and recombination rate of 1e-8 and a sequence length of 10 million base pairs, with fixed random seeds for reproducibility.
 
 .. code-block:: python
@@ -78,7 +72,7 @@ For more details regarding the construction of demographic models using msprime.
 Demographic parameters in momi3
 -------------------------------
 
-A convenient feature of momi3 is its treatment of demographic model parameterization. It automatically translates a given demographic model (e.g., IWM, exponential growth, stepping stone, population split with migration) into the precise set of numerical constraints that satisfy model restrictions, such as those governing time intervals, population sizes, and admixture events. This eliminates the tedious and challenging manual derivation of constraints, making constrained optimization more accessible.
+A convenient feature of momi3 is its treatment of demographic model parameterization. It automatically translates a given demographic model (e.g., IWM, exponential growth, stepping stone) into the precise set of numerical constraints that satisfy model restrictions, such as those governing time intervals, population sizes, and admixture events. This eliminates the tedious and challenging manual derivation of constraints, making constrained optimization more accessible.
 
 In the previous section, we simulated genetic data under an IWM model. We can now examine the full set of parameters associated with this model:
 
@@ -88,7 +82,7 @@ In the previous section, we simulated genetic data under an IWM model. We can no
     et = EventTree(g)
     et.variables
 
-The output is a list of parameters, each entry representing one or more optimizable coordinates. If variables are tied by construction, they appear grouped inside a frozenset:
+The output is a list of parameters, each entry representing one or more optimizable coordinates. If variables are tied by construction of the model, they appear grouped inside a frozenset:
 
 .. code-block:: python
 
@@ -171,7 +165,7 @@ So the output will be:
 
 These constraints ensure biologically meaningful parameter ranges: population sizes and times must be nonnegative, and migration rates must lie within ``[0, 1]``.
 
-In general, ``constraints_for`` automatically generates the linear restrictions required for optimization.
+In general, ``constraints_for`` automatically generates the linear constraints required for optimization.
 
 Modifying the constraints:
 ------------------------------------------
@@ -179,7 +173,7 @@ In addition to the constraints automatically derived from the demographic model,
 
 A common example is the symmetry constraint on migration rates. This reflects the assumption that gene flow between two populations occurs at the same rate in both directions.
 
-To enforce symmetric migration rates, we can add a new equality rule to the constraint matrices returned by constraints_for.
+To enforce symmetric migration rates, we can add a new equality rule to the constraint matrices returned by ``constraints_for``.
 
 This time, let's say we want to infer 3 parameters - the ancestral population size and the symmetric migration rate between P0 and P1. We start by obtaining the default constraints:
 
@@ -251,9 +245,7 @@ Sure enough, the updated constraint now includes the symmetry condition:
     array([0., 0., 1., 0., 1.]))
     }
 
-Constraints can’t and shouldn't be directly removed, since they are derived from the demographic model structure.
-
-However, frozenset parameters disappear when the model no longer forces equality. For example, if a population’s size is not constant across an epoch (e.g., exponential growth), its start_size and end_size become separate variables instead of a single tied frozenset.
+``Frozenset`` parameters cannot be modified or directly removed, since they are derived from the demographic model structure. However, frozenset parameters disappear when the model no longer forces equality. For example, if a population’s size is not constant across an epoch (e.g., exponential growth), its start_size and end_size become separate variables instead of a single tied frozenset.
 
 To show that, let's define a new demographic model where population size changes over time.
 
@@ -264,8 +256,7 @@ To show that, let's define a new demographic model where population size changes
     demo.add_population(name="P0", initial_size=5000, growth_rate=0.002)
     demo.add_population(name="P1", initial_size=5000, growth_rate=0.002)
     demo.set_symmetric_migration_rate(populations=("P0", "P1"), rate=0.0001)
-    tmp = [f"P{i}" for i in range(2)]
-    demo.add_population_split(time=1000, derived=tmp, ancestral="anc")
+    demo.add_population_split(time=1000, derived=[f"P{i}" for i in range(2)], ancestral="anc")
 
 This is a model where P0 and P1 grow exponentially from an initial size of 5000 at a rate of 0.002 per generation.
 
@@ -309,7 +300,7 @@ Correspondingly, the constraints will reflect this change. If you want to peek a
 
     constraints_for(et, *et.variables)
 
-I would not show the full output here since it is too long, but you would see that the start and end sizes for P0 and P1 are now independent variables without equality constraints tying them together.
+The full output will not be shown here since it is too long, but you would see that the start and end sizes for P0 and P1 are now independent variables without equality constraints tying them together.
 
 Inference using SFS-based methods in momi3
 ------------------------------------------
@@ -317,83 +308,50 @@ momi3 provides a likelihood function based on the expected site frequency spectr
 
 As a first step, let’s focus on a single parameter: the migration rate.
 
-Assuming we already have simulated data and the demographic model from the previous section, we can set up the likelihood evaluation as follows:
+Using the simulated data and demographic model established previously, we compute the observed allele frequency spectrum (AFS) from 4 haploid samples each of populations P0 and P1. We then initialize an `ExpectedSFS` object, which defaults to parameter values matching the input demographic model `demo`. To evaluate alternative parameter sets, we can compute the expected SFS by calling `ESFS(params)` with different parameter values as shown below.
 
 .. code-block:: python
 
+    from demesinfer.sfs import ExpectedSFS
+    from demesinfer.loglik.sfs_loglik import sfs_loglik
+    import jax
+    import numpy as np
+    
     param_key = ("migrations", 0, "rate")
-
     afs_samples = {"P0": 4, "P1": 4}
-    ESFS = ExpectedSFS(g, num_samples=afs_samples)
-
-    afs = np.array([0, 12, 7, 3, 0], dtype=float)
-
+    afs = ts.allele_frequency_spectrum(
+        sample_sets=[ts.samples([1])[0:4], ts.samples([2])[0:4]],
+        span_normalise=False,)
+    ESFS = ExpectedSFS(demo.to_demes(), num_samples=afs_samples)
+    
+    @jax.value_and_grad
     def ll_at(val):
-        params = {param_key: float(val)}
-        esfs = np.asarray(ESFS(params))
-        return float(sfs_loglik(afs, esfs))
-
-    def grad_fd(val, h=1e-6):
-        return (ll_at(val + h) - ll_at(val - h)) / (2.0 * h)
-
-Here, ll_at(val) computes the log-likelihood of the observed SFS at a given migration rate, while grad_fd(val) estimates the derivative of the log-likelihood with respect to that parameter using a simple finite-difference approximation.
-
-Evaluating both at a migration rate of 0.0001:
+        params = {param_key: val}
+        esfs = ESFS(params)
+        return sfs_loglik(afs, esfs)
+    
+    loglik_value, loglik_grad = ll_at(0.0002)
+    
+Using JAX's automatic differentiation capabilities via the `@jax.value_and_grad` decorator, the `ll_at(val)` function simultaneously evaluates the log-likelihood and computes its gradient.
 
 .. code-block:: python
 
-    val = 0.0001
-    print("Log-likelihood at rate =", val, "is", ll_at(val))
-    print("Gradient at rate =", val, "is", grad_fd(val))
+    val = 0.0002
+    print("Log-likelihood at rate =", val, "is", loglik_value)
+    print("Gradient at rate =", val, "is", loglik_grad)
 
 .. code-block:: python
 
-    Log-likelihood at rate = 0.0001 is -409184.47044745344
-    Gradient at rate = 0.0001 is -150385.37784130313
+    Log-likelihood at rate = 0.0001 is -136981.5594514
+    Gradient at rate = 0.0001 is -575764.47009787
 
-The values themselves don’t mean much in isolation, but they demonstrate how to call the likelihood and obtain its slope. This is the foundation for parameter inference: we can now pass these functions to a numerical optimizer such as scipy.optimize.minimize to estimate the migration rate.
+The values themselves don’t mean much in isolation, but they demonstrate how to call the likelihood and obtain its gradient. This is the foundation for parameter inference: we can now pass these functions to a numerical optimizer such as ``scipy.optimize.minimize`` to estimate the migration rate.
 
 In the following examples, we will infer three types of parameters: population sizes, split times, and migration rates.
 
 **Note**: Inference with large sample sizes using SFS may be slow. Consider reducing the number of samples when running locally. For reference, in all the examples below, I used a sample size of 10 and ran them locally on a MacBook with an M2 chip. The runtime is usually around 10-15 seconds. Simply bumping this number to 20 results in a 5 minute runtime.
 
-
-To visually inspect how the likelihood changes (and assess reliability), we define a helper function to plot the results:
-
-.. code-block:: python
-
-    from jax import vmap, lax
-    from demesinfer.sfs import ExpectedSFS
-    from demesinfer.loglik.sfs_loglik import sfs_loglik
-
-    # Helper function to convert vector to dict
-    def _vec_to_dict_jax(v: jnp.ndarray, keys: Sequence[Var]) -> Dict[Var, jnp.ndarray]:
-        return {k: v[i] for i, k in enumerate(keys)}
-
-    def plot_sfs_likelihood(demo, paths, vec_values,
-                            afs, afs_samples,
-                            theta=None, sequence_length=None):
-        import matplotlib.pyplot as plt
-
-        path_order: List[Var] = list(paths)
-        esfs = ExpectedSFS(demo, num_samples=afs_samples)
-        def evaluate_at_vec(vec):
-            vec_array = jnp.atleast_1d(vec)
-            params = _vec_to_dict_jax(vec_array, path_order)
-            e1 = esfs(params)
-            return -sfs_loglik(afs, e1, sequence_length, theta)
-
-        results = lax.map(evaluate_at_vec, vec_values)
-
-        plt.figure(figsize=(10, 6))
-        plt.plot(vec_values, results, 'r-', linewidth=2)
-        plt.xlabel("Parameter value")
-        plt.ylabel("Negative Log-Likelihood")
-        plt.title("SFS Likelihood Landscape")
-        plt.grid(True)
-        plt.show()
-
-        return results
+In the next section, to visually inspect how the likelihood changes (and assess reliability), we define a helper function ``plot_sfs_likelihood`` to plot the results. 
 
 Estimating the ancestral population size
 ----------------------------------------
@@ -496,15 +454,15 @@ Optimization with Poisson Likelihood
 
 So far, we have used the multinomial likelihood, which is the default in sfs_loglik when we haven’t provided a mutation rate theta; it conditions on the total number of segregating sites. An alternative is the Poisson likelihood, which models the absolute counts of mutations given the mutation rate theta and the sequence length.
 
-This requires passing mutation rate ``theta`` and ``sequence_length`` into the likelihood function. These parameters depend on the species and the research itself. The setup is the same as before, but now we explicitly provide these parameters. Let's try to optimize the migration rate again, but using the Poisson likelihood this time.
+This requires passing **BOTH** mutation rate ``theta`` and ``sequence_length`` into the likelihood function. These parameters depend on the species and the research itself. The setup is the same as before, but now we explicitly provide these parameters. Let's try to optimize the migration rate again, but using the Poisson likelihood this time.
 
 .. code-block:: python
 
     import jax.numpy as jnp
 
-    # Suppose the true values used in simulation were:
-    theta = 1.25e-8
-    sequence_length = 1_000_000
+    # The true values used in simulation were:
+    theta = 1e-8
+    sequence_length = 1e8
 
     # Example: estimating the migration rate with the Poisson likelihood
     paths = {
@@ -523,10 +481,10 @@ This requires passing mutation rate ``theta`` and ``sequence_length`` into the l
    :alt: Migration rate inference with Poisson likelihood
    :align: center
 
-Poisson likelihood is also optimized near the real value of migration rate 0.0001. Compared to the multinomial likelihood, the Poisson likelihood seems to be underestimate a bit, but it is actually more accurate. 
+Poisson likelihood is also optimized near the real value of migration rate 0.0001. Compared to the multinomial likelihood, the Poisson likelihood seems to be underestimate a bit, but it can perform well if there is strong prior knowledge regarding the mutation rate.
 
 Population size change example
-------------------------------
+-----------------------------
 We now consider a more complex demographic model that includes population size changes and migration rate changes over time.
 
 .. code-block:: python
@@ -607,7 +565,7 @@ We now consider a more complex demographic model that includes population size c
     :alt: Population size change model visualization
     :align: center
 
-**Note** The choice to use 65 (and 66) generations is intentional. In momi3, the event times that coincide exactly are treated as the same time identity and will be grouped into a single parameter (Check the notation section for more details). That’s useful when events truly share a time, but it can also merge parameters you’d prefer to optimize independently. Offsetting one set of events to 65 generations and the others to 66 keeps them as distinct time variables.
+**Note** The choice to use 65 (and 66) generations is intentional. In momi3, the event times that coincide exactly are treated as the same time identity and will be grouped into a single parameter (Check the notation section for more details). That’s useful when events truly share a time, but it can also merge parameters you’d prefer to optimize independently. The only way to avoid having frozensets forcefulyl constraining parameter to be equal is to modify the model. Offsetting one set of events to 65 generations and the others to 66 keeps them as distinct time variables.
 
 You can inspect the parameters/constraints and see the effect using the same commands as before:
 
@@ -619,7 +577,7 @@ You can inspect the parameters/constraints and see the effect using the same com
     et.variables
 
 Admixture example
------------------
+-----------------------------
 Another common demographic scenario of interest is admixture.
 
 Here, we extend the simple IWM example to include four populations: one ancestral population (anc) and three contemporary populations (P0, P1, and ADMIX). We introduce an admixture event in which ADMIX is formed from P0 and P1 500 generations ago. At 1000 generations, P0 and P1 then merge back into the ancestral population.
