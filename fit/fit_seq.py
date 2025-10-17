@@ -106,6 +106,54 @@ def prepare_projection(afs, afs_samples, sequence_length, num_projections, seed)
 
     return proj_dict, einsum_str, input_arrays
 
+def plot_sfs_contour(demo, paths, param1_vals, param2_vals, afs, afs_samples, num_projections = 200, seed = 5, projection=False, theta=None, sequence_length=None):
+    path_order: List[Var] = list(paths)
+    esfs = ExpectedSFS(demo, num_samples=afs_samples)
+
+    if projection:
+        proj_dict, einsum_str, input_arrays = prepare_projection(afs, afs_samples, sequence_length, num_projections, seed)
+    else:
+        proj_dict, einsum_str, input_arrays = None, None, None
+    
+    def compute_for_param1(param1_val):
+        def compute_for_param2(param2_val):
+            vec_array = jnp.array([param1_val, param2_val])
+            params = _vec_to_dict_jax(vec_array, path_order)
+    
+            if projection:
+                tp = jax.jit(lambda X: esfs.tensor_prod(X, params))
+                return -projection_sfs_loglik(tp, proj_dict, einsum_str, input_arrays, sequence_length, theta)
+            else:
+                e1 = esfs(params)
+                return -sfs_loglik(afs, e1, sequence_length, theta)
+        
+        # Map over param2 values for a fixed param1
+        return jax.lax.map(compute_for_param2, param2_vals)
+    
+    # Map over param1 values
+    log_likelihood_grid = jax.lax.map(compute_for_param1, param1_vals)
+    
+    param1_grid, param2_grid = jnp.meshgrid(param1_vals, param2_vals)
+    param1_grid_np = np.array(param1_grid)
+    param2_grid_np = np.array(param2_grid)
+    log_likelihood_grid_np = np.array(log_likelihood_grid)
+    
+    plt.figure(figsize=(10, 8))
+    
+    # Use contourf for filled contours (heatmap instead of just lines)
+    contour = plt.contourf(param1_grid_np, param2_grid_np, log_likelihood_grid_np.T, levels=20, cmap='viridis')
+    plt.colorbar(contour, label='Negative Log-Likelihood')
+    
+    contour_lines = plt.contour(param1_grid_np, param2_grid_np, log_likelihood_grid_np.T, levels=20, colors='black', linewidths=0.5, alpha=0.5)
+    plt.clabel(contour_lines, inline=True, fontsize=8)
+    
+    plt.xlabel('Parameter 1')
+    plt.ylabel('Parameter 2')
+    plt.title('Negative Log-Likelihood Contour Plot')
+    plt.show()
+    
+    return param1_grid_np, param2_grid_np, log_likelihood_grid_np
+    
 def fit(
     demo,
     paths: Params,
