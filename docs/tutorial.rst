@@ -657,13 +657,4 @@ Again, we can visualize the demographic model using ``demesdraw``:
    :alt: Admixture model visualization
    :align: center
 
-.. code-block:: python
-    
-    from demesinfer.event_tree import EventTree
-    from demesinfer.constr import constraints_for
-
-    et = EventTree(g)
-    for v in et.variables:
-        print(v)
-
 In summary, the admixture event expands the parameter space by adding admixture proportions, and the constraints ensure that these proportions form a valid probability distribution.
