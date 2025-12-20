@@ -206,10 +206,10 @@ The output:
     
     CONSTRAINTS:
     --------------------------------------------------
-    Row  1: -x1 ≤ 0
-    Row  2: -x2 ≤ 0
-    Row  3: x2 ≤ 1
-    Row  4: -x3 ≤ 0
+    Row  1: -x1 <= 0
+    Row  2: -x2 <= 0
+    Row  3: x2 <= 1
+    Row  4: -x3 <= 0
     --------------------------------------------------
     
     AS STRINGS:
@@ -275,7 +275,7 @@ Sure enough, the updated constraint now includes the symmetry condition:
              [ 0.,  0., -1.]]),
       array([0., 0., 1., 0.]))}
 
-If one wants to modify the inequalities, one can directly modify constraints. For example, if we want to constraint population size >= 2000., then we would do:
+If one wants to modify the inequalities, one can directly modify constraints. For example, if we want to constraint population size >= 2000., then we need to pay attention to negative signs and would do:
 
 .. code-block:: python
 
