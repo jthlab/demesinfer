@@ -244,54 +244,23 @@ and for each grid point, we evaluate the log-likelihood and compile them to be p
 
 .. code-block:: python
 
-    p1_key = frozenset({('demes', 0, 'epochs', 0, 'end_size'),
-            ('demes', 0, 'epochs', 0, 'start_size')})
-    p2_key = frozenset({('demes', 1, 'epochs', 0, 'end_size'),
-            ('demes', 1, 'epochs', 0, 'start_size')})
+   from demesinfer.plotting_util import plot_sfs_contour
 
-    base = dict(paths)
-    p1_center = float(base[p1_key])
-    p2_center = float(base[p2_key])
-
-    N1, N2 = 10, 10
-    span = 2.0
-    p1_vals = jnp.logspace(jnp.log10(p1_center/span), jnp.log10(p1_center*span), N1)
-    p2_vals = jnp.logspace(jnp.log10(p2_center/span), jnp.log10(p2_center*span), N2)
-
-    Z = np.full((N2, N1), np.nan, dtype=float)
-
-    for i in range(N2):       
-        p2 = float(p2_vals[i])
-        for j in range(N1):   
-            p1 = float(p1_vals[j])
-            g = dict(base)
-            g[p1_key] = jnp.asarray(p1, dtype=jnp.float64)
-            g[p2_key] = jnp.asarray(p2, dtype=jnp.float64)
-
-            x_vec = jnp.asarray([g[k] for k in path_order], dtype=jnp.float64)
-            
-            e_full = esfs(g)
-            ll = sfs_loglik(afs, e_full, sequence_length=None, theta=None)
-            Z[i, j] = float(ll)
-
-    Z_dLL = Z - np.nanmax(Z)
-
-    X, Y = np.meshgrid(np.asarray(p1_vals), np.asarray(p2_vals), indexing="xy")
-    plt.figure(figsize=(7, 5.5))
-    cs = plt.contour(X, Y, Z_dLL, levels=[-10, -5, -2, -1, -0.5, -0.2, -0.1], colors='black')
-    plt.clabel(cs, inline=True, fontsize=8)
-    cf = plt.contourf(X, Y, Z_dLL, levels=40, cmap='viridis')
-    plt.colorbar(cf, label='negative log-likelihood')
-
-    plt.xscale('log'); plt.yscale('log')
-    plt.xlim(float(p1_vals.min()), float(p1_vals.max()))
-    plt.ylim(float(p2_vals.min()), float(p2_vals.max()))
-    plt.xlabel(str(p1_key))
-    plt.ylabel(str(p2_key))
-    plt.title('SFS log-likelihood contours')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.show()
+   paths = {
+       frozenset({
+           ("demes", 1, "epochs", 0, "end_size"),
+           ("demes", 1, "epochs", 0, "start_size"),
+       }): 4000.,
+       frozenset({
+           ("demes", 2, "epochs", 0, "end_size"),
+           ("demes", 2, "epochs", 0, "start_size"),
+       }): 4000.,
+   }
+   
+   param1_vals = jnp.linspace(4000, 6000, 10)
+   param2_vals = jnp.linspace(4000, 6000, 10)
+   
+   result = plot_sfs_contour(demo.to_demes(), paths, param1_vals, param2_vals, afs, afs_samples)
 
 .. image:: images/Contour.png
    :alt: Contour plot of log-likelihood surface
