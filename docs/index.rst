@@ -13,6 +13,7 @@ Contents
    Installation <installation>
    Notation <notation>
    Tutorial <tutorial>
+   Random Projection <projection>
    Optimization <optimization>
    License <license>
    Authors <authors>
