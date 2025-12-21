@@ -6,3 +6,119 @@ The computational demands of evaluating the full expected site frequency spectru
 
 All random projection capabilities are seamlessly integrated into Momi3's core architecture, accessible through the same functional interfaces demonstrated in the Tutorial section. Users can activate these accelerated methods by simply providing an additional parameter to existing functions, maintaining the same intuitive workflow while gaining significant performance benefits.
 
+Let us revisit the IWM model:
+
+.. code-block:: python
+
+  demo = msp.Demography()
+  demo.add_population(initial_size=5000, name="anc")
+  demo.add_population(initial_size=5000, name="P0")
+  demo.add_population(initial_size=5000, name="P1")
+  demo.set_symmetric_migration_rate(populations=("P0", "P1"), rate=0.0001)
+  demo.add_population_split(time=1000, derived=["P0", "P1"], ancestral="anc")
+  
+  sample_size = 10
+  samples = {"P0": sample_size, "P1": sample_size}
+  ts = msp.sim_mutations(
+      msp.sim_ancestry(
+          samples=samples, demography=demo,
+          recombination_rate=1e-8, sequence_length=1e8, random_seed=12
+      ),
+      rate=1e-8, random_seed=13
+  )
+  
+  afs_samples = {"P0": sample_size * 2, "P1": sample_size * 2}
+  afs = ts.allele_frequency_spectrum(
+      sample_sets=[ts.samples([1]), ts.samples([2])],
+      span_normalise=False,
+      polarised = True
+  )
+
+The first step is to create the random projections using ``prepare_projection`` and one must provide the number of samples used (``afs_samples``), the observed frequency spectrum (``afs``), the number of projections to use and a seed for reproducibility.
+
+.. code-block:: python
+
+  sequence_length = None
+  num_projections = 200
+  seed = 50 
+  
+  proj_dict, einsum_str, input_arrays = prepare_projection(afs, afs_samples, sequence_length, num_projections, seed)
+
+The function returns three components that collectively enable efficient likelihood computation via random projection: ``proj_dict`` contains the random projection vectors that define the low-dimensional subspace for approximating the full expected SFS, ``einsum_str`` is a string specifying the Einstein summation convention for the tensor operations, and ``input_arrays`` are preprocessed arrays that serve as inputs to the jnp.einsum call, optimized for JAX's just-in-time compilation. Together, these components provide a complete specification for computing the projected likelihood with optimal computational efficiency within JAX's differentiable programming framework.
+
+To obtain a low dimensional representation of the SFS, we use ``tensor_prod`` which takes in a dictionary of all the random projections and applies the projections to the full expected SFS evaluated at parameters with specified values in ``paths``. We follow the same setup in ``Tutorial`` and create an ``ExpectedSFS`` object and apply ``tensor_prod``.
+.. code-block:: python
+
+  paths = {frozenset({('demes', 0, 'epochs', 0, 'end_size'),
+            ('demes', 0, 'epochs', 0, 'start_size')}):3000.,
+        frozenset({('demes', 1, 'epochs', 0, 'end_size'),
+            ('demes', 1, 'epochs', 0, 'start_size')}): 6000.,
+        frozenset({('demes', 2, 'epochs', 0, 'end_size'),
+            ('demes', 2, 'epochs', 0, 'start_size')}): 4000.}
+
+esfs_obj = ExpectedSFS(demo.to_demes(), num_samples=afs_samples)
+lowdim_esfs = esfs_obj.tensor_prod(proj_dict, paths)
+
+Each projection summarizes the full SFS with a single number, so the dimension of ``lowdim_esfs`` will match the number of projections used. One can also easily compute the likelihood using ``projection_sfs_loglik``. The likelihood follows similar principals as ``sfs_loglik`` where **BOTH** a sequence length and mutation rate (theta) must be provided to indicate Poisson likelihood, or set both as None to use a Multinomial likelihood.
+
+.. code-block:: python
+
+  param_key = frozenset({('migrations', 0, 'rate')})
+
+  @jax.value_and_grad
+  def ll_at(val):
+      params = {param_key: val}
+      return projection_sfs_loglik(esfs_obj, params, proj_dict, einsum_str, input_arrays, sequence_length=None, theta=None)
+  
+  val = 0.0002
+  loglik_value, loglik_grad = ll_at(val)
+
+  print("Log-likelihood at rate =", val, "is", loglik_value)
+  print("Gradient at rate =", val, "is", loglik_grad)
+
+To visualize the likelihood over one parameter using random projections, using the same ``plot_sfs_likelihood`` function we can pass in an argument for ``projection`` and ``num_projections``.
+
+.. code-block:: python
+
+  import jax.numpy as jnp
+  paths = {
+      frozenset({("migrations", 0, "rate")}): 0.0001,
+  }
+  
+  vec_values = jnp.linspace(0.00004, 0.00014, 10)
+  result = plot_sfs_likelihood(demo.to_demes(), paths, vec_values, afs, afs_samples, num_projections=200, seed=5, projection=True)
+
+If one wanted to use the Poisson likelihood we just pass in sequence length and mutation rate.
+
+.. code-block:: python
+
+  paths = {
+    frozenset({("migrations", 0, "rate")}): 0.0001,
+  }
+  
+  vec_values = jnp.linspace(0.00004, 0.00014, 10)
+  sequence_length = 1e8
+  theta = 1e-8
+  result = plot_sfs_likelihood(demo.to_demes(), paths, vec_values, afs, afs_samples, num_projections=200, seed=5, projection=True, sequence_length=sequence_length, theta=theta)
+  
+Similarily if one wanted to plot contour plots for visualizing two variables at once, we use the same ``plot_sfs_contour`` as pass in an argument ``projection``.
+
+.. code-block:: python
+
+  from demesinfer.plotting_util import plot_sfs_contour
+
+  paths = {
+      frozenset({
+          ("demes", 1, "epochs", 0, "end_size"),
+          ("demes", 1, "epochs", 0, "start_size"),
+      }): 4000.,
+      frozenset({
+          ("demes", 2, "epochs", 0, "end_size"),
+          ("demes", 2, "epochs", 0, "start_size"),
+      }): 4000.,
+  }
+  
+  param1_vals = jnp.linspace(4000, 6000, 10)
+  param2_vals = jnp.linspace(4000, 6000, 10)
+  
+  result = plot_sfs_contour(demo.to_demes(), paths, param1_vals, param2_vals, afs, afs_samples, projection=True, num_projections=200, seed=5)
