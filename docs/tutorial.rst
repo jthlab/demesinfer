@@ -530,6 +530,37 @@ To use the Poisson likelihood, this requires passing **BOTH** mutation rate ``th
 
 Poisson likelihood is also optimized near the real value of migration rate 0.0001. Compared to the multinomial likelihood, the Poisson can perform well if there is strong prior knowledge regarding the mutation rate. However, be aware that if estimates of the mutation rate are not accurate, then that can significantly impact the accuracy for the Poisson likelihood. 
 
+Visualizing the log-likelihood Landscape
+--------------------------------------
+
+One of the way to visualize this optimization process is to plot the log-likelihood surface
+with a contour plot. With the same principal as ``plot_sfs_likelihood``, one can optionally pass in ``sequence_length`` and ``theta`` to select between Poisson and Multinomial likelihood.
+
+The basic idea is simple, we pick two parameters to scan over a grid, and for each grid point, we evaluate the log-likelihood and compile them to be plotted into a contour plot.
+
+.. code-block:: python
+
+   from demesinfer.plotting_util import plot_sfs_contour
+
+   paths = {
+       frozenset({
+           ("demes", 1, "epochs", 0, "end_size"),
+           ("demes", 1, "epochs", 0, "start_size"),
+       }): 4000.,
+       frozenset({
+           ("demes", 2, "epochs", 0, "end_size"),
+           ("demes", 2, "epochs", 0, "start_size"),
+       }): 4000.,
+   }
+   
+   param1_vals = jnp.linspace(4000, 6000, 10)
+   param2_vals = jnp.linspace(4000, 6000, 10)
+   
+   result = plot_sfs_contour(demo.to_demes(), paths, param1_vals, param2_vals, afs, afs_samples)
+
+.. image:: images/Contour.png
+   :alt: Contour plot of log-likelihood surface
+
 Population size change example
 -----------------------------
 We now consider a more complex demographic model that includes population size changes and migration rate changes over time.
