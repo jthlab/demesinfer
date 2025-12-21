@@ -239,5 +239,6 @@ We have this full pipeline wrapped in a single ``fit_sfs`` function for convenie
 
 .. code-block:: python
 
-
-   :align: center
+   from demesinfer.fit.fit_sfs import fit
+   
+   optimal_params, final_likelihood, optimal_params_vector = fit(demo.to_demes(), paths, afs, afs_samples, cons, lb, ub)
