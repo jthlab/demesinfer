@@ -572,6 +572,7 @@ The basic idea is simple, we pick two parameters to scan over a grid, and for ea
 
 .. image:: images/Contour.png
    :alt: Contour plot of log-likelihood surface
+   :align: center
 
 Population size change example
 -----------------------------
