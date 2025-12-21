@@ -47,6 +47,7 @@ The first step is to create the random projections using ``prepare_projection`` 
 The function returns three components that collectively enable efficient likelihood computation via random projection: ``proj_dict`` contains the random projection vectors that define the low-dimensional subspace for approximating the full expected SFS, ``einsum_str`` is a string specifying the Einstein summation convention for the tensor operations, and ``input_arrays`` are preprocessed arrays that serve as inputs to the jnp.einsum call, optimized for JAX's just-in-time compilation. Together, these components provide a complete specification for computing the projected likelihood with optimal computational efficiency within JAX's differentiable programming framework.
 
 To obtain a low dimensional representation of the SFS, we use ``tensor_prod`` which takes in a dictionary of all the random projections and applies the projections to the full expected SFS evaluated at parameters with specified values in ``paths``. We follow the same setup in ``Tutorial`` and create an ``ExpectedSFS`` object and apply ``tensor_prod``.
+
 .. code-block:: python
 
   paths = {frozenset({('demes', 0, 'epochs', 0, 'end_size'),
