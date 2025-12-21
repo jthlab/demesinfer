@@ -369,14 +369,14 @@ Using the simulated data and the original IWM model from the beginning of the tu
         params = {param_key: val}
         esfs = ESFS(params)
         return sfs_loglik(afs, esfs)
-    
-    loglik_value, loglik_grad = ll_at(0.0002)
+
+    val = 0.0002
+    loglik_value, loglik_grad = ll_at(val)
     
 Using JAX's automatic differentiation capabilities via the ``@jax.value_and_grad`` decorator, the ``ll_at(val)`` function simultaneously evaluates the log-likelihood and computes its gradient at value ``val``.
 
 .. code-block:: python
 
-    val = 0.0002
     print("Log-likelihood at rate =", val, "is", loglik_value)
     print("Gradient at rate =", val, "is", loglik_grad)
 
