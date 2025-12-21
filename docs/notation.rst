@@ -136,4 +136,4 @@ Users are encouraged to modify these constraints according to their specific mod
 
 For detailed instructions on modifying these constraints, please refer to the Tutorial documentation section.
 
-Remember, you can always inspect the demographic model by calling the ``asdict()`` method on your demes model object (e.g., ``g.asdict()``) to understand its structure better.
+Remember, you can always inspect the demographic model by calling the ``asdict()`` method on your ``demes`` model object (e.g., ``g.asdict()``) to understand its structure better.
