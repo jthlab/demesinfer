@@ -432,6 +432,7 @@ Again, starting from 4000, we search over values between 4000 and 6000:
 .. code-block:: python
 
     import jax.numpy as jnp
+    from demesinfer.plotting_util import plot_sfs_likelihood
     paths = {
         frozenset({
             ("demes", 1, "epochs", 0, "end_size"),
