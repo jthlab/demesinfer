@@ -240,36 +240,4 @@ We have this full pipeline wrapped in a single ``fit_sfs`` function for convenie
 .. code-block:: python
 
 
-
-Visualizing the log-likelihood Landscape
---------------------------------------
-
-One of the way to visualize this optimization process is to plot the log-likelihood surface
-with a contour plot.
-
-The basic idea is simple, we pick two parameters to scan over a grid, 
-and for each grid point, we evaluate the log-likelihood and compile them to be plotted into a contour plot.
-
-.. code-block:: python
-
-   from demesinfer.plotting_util import plot_sfs_contour
-
-   paths = {
-       frozenset({
-           ("demes", 1, "epochs", 0, "end_size"),
-           ("demes", 1, "epochs", 0, "start_size"),
-       }): 4000.,
-       frozenset({
-           ("demes", 2, "epochs", 0, "end_size"),
-           ("demes", 2, "epochs", 0, "start_size"),
-       }): 4000.,
-   }
-   
-   param1_vals = jnp.linspace(4000, 6000, 10)
-   param2_vals = jnp.linspace(4000, 6000, 10)
-   
-   result = plot_sfs_contour(demo.to_demes(), paths, param1_vals, param2_vals, afs, afs_samples)
-
-.. image:: images/Contour.png
-   :alt: Contour plot of log-likelihood surface
    :align: center
