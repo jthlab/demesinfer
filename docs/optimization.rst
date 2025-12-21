@@ -116,6 +116,8 @@ For any contrained optimization method, one needs a set of parameters they wish 
 Initial Required Setup
 ----------------------
 
+.. code-block:: python
+
     ###### Part 1 #####
     path_order: List[Var] = list(paths) # convert parameters into list
     x0 = jnp.array(_dict_to_vec(paths, path_order)) # convert initial values into a vector
@@ -188,6 +190,7 @@ Create and run the optimizer
 The final step is use an optimizer. Here we use ``scipy.minimize`` with constrained optimizer ``"trust-constr"``. Please refer to https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
 
 .. code-block:: python
+
     gtol = 1e-5
     xtol = 1e-5
     maxiter = 1000
