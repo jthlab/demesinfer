@@ -111,7 +111,7 @@ Suppose now we wish to optimize the following parameters, their associated value
 
     cons = create_constraints(demo.to_demes(), paths)
 
-For any contrained optimization method, one needs a set of parameters they wish to optimize, the constraints, a way to compute the expected SFS, and a way to compute the likelihood and its gradient.
+For any contrained optimization method, one needs a set of parameters they wish to optimize, the constraints, a way to compute the expected SFS, and a way to compute the likelihood and its gradient. The ``create_constraints`` function is a helper function that takes in a dictionary of parameters and calls on ``constraints_for`` to output the associated constraints. 
 
 Initial Required Setup
 ----------------------
