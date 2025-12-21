@@ -219,6 +219,11 @@ The output:
     Row 4: -frozenset({('demes', 1, 'start_time'), ('migrations', 0, 'start_time'), ('migrations', 1, 'start_time'), ('demes', 2, 'start_time'), ('demes', 0, 'epochs', 0, 'end_time')}) <= 0.0
     --------------------------------------------------
 
+Converting Momi3 constraints to scipy.optimize.LinearConstraint:
+------------------------------------------
+Separate ``create_inequalities``.
+
+
 Modifying the constraints:
 ------------------------------------------
 In addition to the constraints automatically derived from the construction of the demographic model, users may impose custom constraints to reflect specific biological assumptions or modeling choices.
