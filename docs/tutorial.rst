@@ -363,7 +363,21 @@ Using the simulated data and the original IWM model from the beginning of the tu
         span_normalise=False,
         polarised=True)
     ESFS = ExpectedSFS(demo.to_demes(), num_samples=afs_samples)
-    
+    val = 0.0002
+    params = {param_key: val}
+    esfs = ESFS(params)
+    print(esfs)
+
+The full expected SFS of the IWM model with a modified 0.0002 as the migration rate from P0 to P1 is:
+
+.. code-block:: python
+    [[    0.      11881.158    3088.091     799.73804   197.59953]
+     [11617.849    4561.4404   2405.3281   1276.4596    444.05203]
+     [ 3169.2278   2360.8848   2093.3965   1545.6044    846.32776]
+     [  763.63635  1309.0457   1579.5593   1614.7706   1404.3645 ]
+     [  207.27138   460.1628    863.6516   1437.3718      0.     ]]
+
+.. code-block:: python
     @jax.value_and_grad
     def ll_at(val):
         params = {param_key: val}
@@ -372,13 +386,11 @@ Using the simulated data and the original IWM model from the beginning of the tu
 
     val = 0.0002
     loglik_value, loglik_grad = ll_at(val)
-    
-Using JAX's automatic differentiation capabilities via the ``@jax.value_and_grad`` decorator, the ``ll_at(val)`` function simultaneously evaluates the log-likelihood and computes its gradient at value ``val``.
-
-.. code-block:: python
 
     print("Log-likelihood at rate =", val, "is", loglik_value)
     print("Gradient at rate =", val, "is", loglik_grad)
+    
+Using JAX's automatic differentiation capabilities via the ``@jax.value_and_grad`` decorator, the ``ll_at(val)`` function simultaneously evaluates the log-likelihood and computes its gradient at value ``val``.
 
 .. code-block:: python
 
