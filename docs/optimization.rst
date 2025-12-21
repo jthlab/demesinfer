@@ -26,8 +26,6 @@ Imports
    from scipy.optimize import Bounds, LinearConstraint, minimize
    from demesinfer.fit.util import _dict_to_vec, _vec_to_dict_jax, _vec_to_dict, create_inequalities, make_whitening_from_hessian, pullback_objective, create_constraints
    from typing import Any, List, Mapping, Set, Tuple
-   
-   
    from demesinfer.sfs import ExpectedSFS
    from demesinfer.constr import EventTree, constraints_for
    from demesinfer.fit.fit_sfs import _compute_sfs_likelihood, neg_loglik
