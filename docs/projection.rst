@@ -4,7 +4,7 @@ Random projection is a dimensionality reduction technique that projects high-dim
 
 The computational demands of evaluating the full expected site frequency spectrum (SFS) increase substantially with both sample size and model complexity. To address these challenges, we implement random projection as an efficient, low-dimensional approximation method that preserves essential signals of the full SFS while dramatically reducing computational cost.
 
-All random projection capabilities are seamlessly integrated into Momi3's core architecture, accessible through the same functional interfaces demonstrated in the Tutorial section. Users can activate these accelerated methods by simply providing an additional parameter to existing functions, maintaining the same intuitive workflow while gaining significant performance benefits.
+All random projection capabilities are seamlessly integrated into Momi3's core architecture, accessible through the same functional interfaces demonstrated in the ``Tutorial`` section. Users can use these accelerated methods by simply providing an additional parameter to existing functions, maintaining the same intuitive workflow while gaining significant performance benefits.
 
 Let us revisit the IWM model:
 
@@ -44,9 +44,9 @@ The first step is to create the random projections using ``prepare_projection`` 
   
   proj_dict, einsum_str, input_arrays = prepare_projection(afs, afs_samples, sequence_length, num_projections, seed)
 
-The function returns three components that collectively enable efficient likelihood computation via random projection: ``proj_dict`` contains the random projection vectors that define the low-dimensional subspace for approximating the full expected SFS, ``einsum_str`` is a string specifying the Einstein summation convention for the tensor operations, and ``input_arrays`` are preprocessed arrays that serve as inputs to the jnp.einsum call, optimized for JAX's just-in-time compilation. Together, these components provide a complete specification for computing the projected likelihood with optimal computational efficiency within JAX's differentiable programming framework.
+The function returns three components that collectively enable efficient likelihood computation via random projection: ``proj_dict`` contains the random projection vectors that define the low-dimensional subspace for approximating the full expected SFS, ``einsum_str`` is a string specifying the Einstein summation for tensor operations, and ``input_arrays`` are preprocessed arrays that serve as inputs to the ``jax.numpy.einsum`` call, optimized for JAX's just-in-time compilation. Together, these components are used for computing the projected likelihood with optimal computational efficiency within JAX's differentiable programming framework.
 
-To obtain a low dimensional representation of the SFS, we use ``tensor_prod`` which takes in a dictionary of all the random projections and applies the projections to the full expected SFS evaluated at parameters with specified values in ``paths``. We follow the same setup in ``Tutorial`` and create an ``ExpectedSFS`` object and apply ``tensor_prod``.
+To obtain a low dimensional representation of the SFS, we use ``tensor_prod`` which takes in a dictionary of the random projections and applies them to the full expected SFS evaluated at the specified parameter values in the ``paths`` variable. We follow the same setup in ``Tutorial`` and create an ``ExpectedSFS`` object and apply ``tensor_prod``.
 
 .. code-block:: python
 
@@ -57,10 +57,10 @@ To obtain a low dimensional representation of the SFS, we use ``tensor_prod`` wh
         frozenset({('demes', 2, 'epochs', 0, 'end_size'),
             ('demes', 2, 'epochs', 0, 'start_size')}): 4000.}
 
-esfs_obj = ExpectedSFS(demo.to_demes(), num_samples=afs_samples)
-lowdim_esfs = esfs_obj.tensor_prod(proj_dict, paths)
+  esfs_obj = ExpectedSFS(demo.to_demes(), num_samples=afs_samples)
+  lowdim_esfs = esfs_obj.tensor_prod(proj_dict, paths)
 
-Each projection summarizes the full SFS with a single number, so the dimension of ``lowdim_esfs`` will match the number of projections used. One can also easily compute the likelihood using ``projection_sfs_loglik``. The likelihood follows similar principals as ``sfs_loglik`` where **BOTH** a sequence length and mutation rate (theta) must be provided to indicate Poisson likelihood, or set both as None to use a Multinomial likelihood.
+Each projection summarizes the full SFS with a single number, so the dimension of ``lowdim_esfs`` will match the number of projections used. One can also easily compute the likelihood using ``projection_sfs_loglik``. The likelihood follows similar principals as ``sfs_loglik`` where **BOTH** a sequence length and mutation rate (theta) must be provided to indicate Poisson likelihood, or set both as ``None`` to use a Multinomial likelihood.
 
 .. code-block:: python
 
@@ -102,7 +102,7 @@ If one wanted to use the Poisson likelihood we just pass in sequence length and 
   theta = 1e-8
   result = plot_sfs_likelihood(demo.to_demes(), paths, vec_values, afs, afs_samples, num_projections=200, seed=5, projection=True, sequence_length=sequence_length, theta=theta)
   
-Similarily if one wanted to plot contour plots for visualizing two variables at once, we use the same ``plot_sfs_contour`` as pass in an argument ``projection``.
+Similarily if one wanted to plot contour plots for visualizing two variables at once, we use the same ``plot_sfs_contour`` and pass in an argument ``projection``.
 
 .. code-block:: python
 
