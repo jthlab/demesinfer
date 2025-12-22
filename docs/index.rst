@@ -15,6 +15,7 @@ Contents
    Tutorial <tutorial>
    Random Projection <projection>
    Optimization <optimization>
+   Loading VCF Data <loading_vcf_data>
    License <license>
    Authors <authors>
    Module Reference <api/modules>
