@@ -123,3 +123,5 @@ Similarily if one wanted to plot contour plots for visualizing two variables at 
   param2_vals = jnp.linspace(4000, 6000, 10)
   
   result = plot_sfs_contour(demo.to_demes(), paths, param1_vals, param2_vals, afs, afs_samples, projection=True, num_projections=200, seed=5)
+
+These examples highlight that the projected SFS can capture similar signals as the full expected SFS, please refer to the preprint for further details.
