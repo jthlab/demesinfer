@@ -74,7 +74,7 @@ Now that you have everything set up from the simulation, inspect the parameters 
     et = EventTree(demo.to_demes())
     et.variables
 
-The variables are shown below; some are grouped in a ``frozenset`` to indicate parameters that must be optimized together. If you're unfamiliar with the grouping we use here, see the Tutorial and Notation section.
+The variables are shown below; some are grouped in a ``frozenset`` to indicate parameters that must be optimized together. If you're unfamiliar with the grouping we use here, see the ``Tutorial`` and ``Notation`` section.
 
 .. code-block:: python
 
@@ -111,7 +111,7 @@ Suppose now we wish to optimize the following parameters, their associated value
 
     cons = create_constraints(demo.to_demes(), paths)
 
-For any contrained optimization method, one needs a set of parameters they wish to optimize, the constraints, a way to compute the expected SFS, and a way to compute the likelihood and its gradient. The ``create_constraints`` function is a helper function that takes in a dictionary of parameters and calls on ``constraints_for`` to output the associated constraints. 
+The ``create_constraints`` function is a helper function that takes in a dictionary of parameters and calls on ``constraints_for`` to output the associated constraints. For any contrained optimization method, one needs a set of parameters they wish to optimize, the constraints, a way to compute the expected SFS, and a way to compute the likelihood and its gradient. 
 
 Initial Required Setup
 ----------------------
@@ -151,11 +151,11 @@ Initial Required Setup
 
 For ``scipy.minimize``, the setup requires three parts. 
 
-Part 1: A ``dictionary`` object is convenient for tracking the current state of parameters, but most optimizers can only operate over vectors/lists. So one must convert the ``dictionary`` object into a set of vectors/lists. In our experience with ``scipy.minimize``, it works best when you provide a lower bound ``lb`` and upper bound ``up`` that limits the parameter space that the optimizer searches over. To compute the expected SFS for any arbitrary set of parameter values, one must create the ``ExpectedSFS`` object.
+Part 1: While ``dictionary`` representations provide intuitive tracking of parameter states, most numerical optimizers require vectorized inputs. To address this, parameter dictionaries must be transformed into compatible vector formats. Based on our benchmarking with scipy.minimize, we recommend explicitly defining lower (lb) and upper (ub) bounds to constrain the search space, which significantly improves optimization performance and stability. Once parameter vectors are defined, evaluating model fit requires instantiating the ``ExpectedSFS`` object with the current demographic model and later use it to compute the expected SFS.
 
-Part 2: One must make two decisions, the first decision is to use a boolean ``projection`` to indicate whether we will be using the random projection as an approximation of the expected SFS. Here ``projection = False`` indicates we do not use random projections and instead calculate the expected SFS exactly. The second decision is the type of likelihood to use, one must specify **BOTH** ``sequence_length`` and ``theta`` to use the Poisson likelihood, otherwise leave both as ``None`` to use the Multinomial likelihood. 
+Part 2: One must make two decisions, the first decision is to specify a boolean ``projection`` to indicate whether we will be using the random projection as an approximation of the expected SFS. Here ``projection = False`` indicates we do not use random projections and instead calculate the expected SFS exactly. The second decision is the type of likelihood to use, one must specify **BOTH** ``sequence_length`` and ``theta`` to use the Poisson likelihood, otherwise leave both as ``None`` to use the Multinomial likelihood. 
 
-Part 3: This setup is optional and will depend on the user's preference. In our experience with ``scipy.minimize``, due to the magnitude difference between parameters such as the migration rate and population sizes, the gradient with respect to each variable will cause parameter updates to be unstable. We implement a preconditioning method that makes our problem more suitable for optimization. Instead of optimizing over the classical likelihood function ``_compute_sfs_likelihood``, we transform the likelihood function and the bounds to instead optimize over a function ``g`` with better conditioning. For more information on preconditioning please refer to: https://en.wikipedia.org/wiki/Preconditioner
+Part 3: This setup is optional and will depend on the user's preference. In our experience with ``scipy.minimize``, due to the magnitude difference between parameters such as the migration rate and population sizes, the gradient with respect to each variable will cause parameter updates to be unstable. We implemented a preconditioning method that makes our problem more suitable for optimization. Instead of optimizing over the classical likelihood function ``_compute_sfs_likelihood``, we transform the likelihood function and the bounds to instead optimize over a function ``g`` with better conditioning. For more information on preconditioning please refer to: https://en.wikipedia.org/wiki/Preconditioner
 
 Constraints and scipy.optimize.LinearConstraint
 ----------------------
@@ -166,7 +166,7 @@ parameters. It returns a dict with:
 - ``"eq"`` → ``(Aeq, beq)`` for equality constraints
 - ``"ineq"`` → ``(G, h)`` for inequalities.
 
-These map directly to SciPy's ``~scipy.optimize.LinearConstraint``:
+These map directly to SciPy's ``scipy.optimize.LinearConstraint``:
 
 .. code-block:: python
 
@@ -226,12 +226,12 @@ For the simulated example, the estimates are close to the true values:
 .. code-block:: python
 
    Optimal parameters:  
-{frozenset({('demes', 0, 'epochs', 0, 'end_size'), ('demes', 0, 'epochs', 0, 'start_size')}): 5016.814453125, 
-
-frozenset({('demes', 1, 'epochs', 0, 'start_size'), ('demes', 1, 'epochs', 0, 'end_size')}): 5238.4287109375, 
-
-frozenset({('demes', 2, 'epochs', 0, 'start_size'), ('demes', 2, 'epochs', 0, 'end_size')}): 5025.2666015625}
+   {frozenset({('demes', 0, 'epochs', 0, 'end_size'), ('demes', 0, 'epochs', 0, 'start_size')}): 5016.814453125, 
    
+   frozenset({('demes', 1, 'epochs', 0, 'start_size'), ('demes', 1, 'epochs', 0, 'end_size')}): 5238.4287109375, 
+   
+   frozenset({('demes', 2, 'epochs', 0, 'start_size'), ('demes', 2, 'epochs', 0, 'end_size')}): 5025.2666015625}
+      
    Final likelihood evaluation:  430751.8125
    Optimal parameters as a vector:  [5016.8145 5238.4287 5025.2666]
 
@@ -242,3 +242,34 @@ We have this full pipeline wrapped in a single ``fit_sfs`` function for convenie
    from demesinfer.fit.fit_sfs import fit
    
    optimal_params, final_likelihood, optimal_params_vector = fit(demo.to_demes(), paths, afs, afs_samples, cons, lb, ub)
+
+
+Understanding the objective function
+-----------------
+Below is just an example of the objective function we designed for ``scipy.minimize`` to give users a better understanding of creating an inference pipeline. 
+
+.. code-block:: python
+
+   def _compute_sfs_likelihood(vec, args_nonstatic, args_static):
+       (path_order, proj_dict, input_arrays, sequence_length, theta, projection, afs) = args_nonstatic
+       (esfs_obj, einsum_str) = args_static
+       params = _vec_to_dict_jax(vec, path_order)
+       
+       if projection:
+           loss = -projection_sfs_loglik(esfs_obj, params, proj_dict, einsum_str, input_arrays, sequence_length, theta)
+           return loss
+       else:
+           esfs = esfs_obj(params)
+           loss = -sfs_loglik(afs, esfs, sequence_length, theta)
+           return loss
+   
+   def neg_loglik(vec, g, preconditioner_nonstatic, args_nonstatic, lb, ub):
+       if jnp.any(vec >= ub):
+           return jnp.inf, jnp.full_like(vec, 1e10)
+   
+       if jnp.any(vec <= lb):
+           return jnp.inf, jnp.full_like(vec, -1e10)
+   
+       return g(vec, preconditioner_nonstatic, args_nonstatic)
+
+The objective function one would typically use for scipy.minimize would look something like ``neg_loglik``, where ``vec`` represents the parameter values, ``g`` computes the likelihood in a transformed space by indirectly calling ``_compute_sfs_likelihood``, and the other variables are arguments necessary for computing the likelihood. To limit the parameter search space we define variables ``lb`` and ``ub``. The ``_compute_sfs_likelihood`` function unpacks all of the arguments and makes a simple check for whether a user wants to compute the projected or full expected SFS.
