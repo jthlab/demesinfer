@@ -20,7 +20,7 @@ To get started, import the necessary packages:
     import demes
     import demesdraw
 
-For simplicity, we consider a classic isolation-with-migration (IWM) scenario: two subpopulations (P0 and P1) that split from a common ancestor. All populations are assumed to have constant effective population sizes of 5000, and after the split the subpopulations exchange migrants at a symmetric rate of 0.0001. We set the split time between the subpopulations and their ancestor to 1000 generations:
+For simplicity, we consider a classic isolation-with-migration (IWM) scenario: two subpopulations (P0 and P1) split from a common ancestor. All populations have constant effective population sizes of 5000, and after the split the subpopulations exchange migrants at a symmetric rate of 0.0001. We set the split time between the subpopulations and their ancestor to 1000 generations:
 
 .. code-block:: python
 
@@ -104,9 +104,9 @@ The output is a list of parameters, each entry representing an optimizable param
                 ('migrations', 0, 'end_time'),
                 ('migrations', 1, 'end_time')})]
 
-Demes are indexed in the order they were added to the msprime.Demography() object. Here, demes 0, 1, and 2 correspond to populations anc, P0, and P1, respectively. In the ``demes`` package, demographic models are represented as graphs and stored in dictionary objects, and the parameters are accessed through dictionary paths. In Momi3, every tuple within the ``frozenset`` objects are paths to the associated ``demes`` parameter. 
+Demes are indexed in the order they were added to the msprime.Demography() object. Here, demes 0, 1, and 2 correspond to populations anc, P0, and P1, respectively. In the ``demes`` package, demographic models are represented as graphs and stored in dictionary objects, and the parameters are accessed through dictionary paths. In Momi3, every tuple within the ``frozenset`` objects are paths to their associated ``demes`` parameter. 
 
-To gain a thorough understanding of the parameterization, please refer to the ''Notation Section''. In this specific example, any parameters within the same ``frozenset`` object are treated as a single parameter, which implicitly constrains them all to be equal. The first three frozenset objects represent the constant population sizes for anc, P0, and P1, respectively. In this particular IWM example, because the population size is constant over the epoch, the start and end size are treated as a single parameter by **construction** of the model. 
+To gain a thorough understanding of the parameterization, please refer to the ``Notation`` section. In this specific example, any parameters within the same ``frozenset`` object are treated as a single parameter, which implicitly constrains them all to be equal. The first three frozenset objects represent the constant population sizes for anc, P0, and P1, respectively. In this particular IWM example, because the population size is constant over the epoch, the start and end size are treated as a single parameter by **construction** of the model. 
 
 ``frozenset({('migrations', 0, 'rate')})`` and ``frozenset({('migrations', 1, 'rate')})`` are the respective assymetric migration parameters between populations P0 and P1. By default they will be treated as assymetric, one can edit the constraints to enforce symmetry and constrain the optimization to treat the two directions of migration as a single parameter. (See section below on editing constraints)
 
@@ -219,10 +219,37 @@ The output:
     Row 4: -frozenset({('demes', 1, 'start_time'), ('migrations', 0, 'start_time'), ('migrations', 1, 'start_time'), ('demes', 2, 'start_time'), ('demes', 0, 'epochs', 0, 'end_time')}) <= 0.0
     --------------------------------------------------
 
-Converting Momi3 constraints to scipy.optimize.LinearConstraint:
+Alternative representation of inequality constraints:
 ------------------------------------------
-Separate ``create_inequalities``.
 
+.. code-block:: python
+
+    from demesinfer.fit.util import alternative_constraint_rep
+    
+    G, h = constraint["ineq"]
+    A_alt, ub_alt, lb_alt = alternative_constraint_rep(G, h)
+    print(A_alt)
+    print("lower bound: ", lb_alt)
+    print("upper bound: ", ub_alt)
+
+The output:
+
+.. code-block:: python
+
+    [[1. 0. 0.]
+     [0. 1. 0.]
+     [0. 0. 1.]]
+    lower bound: [0. 0. 0.]
+    upper bound: [inf  1. inf]
+
+Depending on the numerical optimizer one would like to use, sometimes it's more preferable to express inequality constraints explicitly with a lower and upper bound. Using the ``alternative_constraint_rep`` function, we input the ``momi3`` inequality constraints and output an alternative representation that tells us: 
+
+.. code-block:: python
+    Row 1: 0 <= x1 <= inf
+    Row 2: 0 <= x2 <= 1
+    Row 3: 0 <= x3 <= inf
+
+In the ``Optimization`` section, we will see that ``scipy.minimize.LinearConstraint`` requires this alternative representation of inequality constraints.
 
 Modifying the constraints:
 ------------------------------------------
@@ -263,7 +290,7 @@ With the code above, our constraint looks like this:
 
 As expected, there are no equality constraints, and the inequality constraints ensure nonnegative population sizes and migration rates bounded between [0,1].
 
-Then, we can modify the constraint to enforce symmetry in migration rates using the ``modify_constraints_for_equality`` function. We provide the original ``constraint`` and the ``indices`` of the variables that we want to constraint.
+Then, we can modify the constraint to enforce symmetry in migration rates using the ``modify_constraints_for_equality`` function. We provide the original ``constraint`` and the ``indices`` of the variables that we want to apply an equality constraint.
 
 .. code-block:: python
 
@@ -336,7 +363,7 @@ The output is:
                 ('migrations', 0, 'end_time'),
                 ('migrations', 1, 'end_time')})]
 
-We can see that indeed, the population sizes for P0 and P1 are now treated as separate parameters (no longer in a frozenset), since they can differ due to exponential growth. The ancestral population size remains constant throughout time, so it is still grouped in a frozenset.
+We can see that indeed, the population sizes for P0 and P1 are now treated as separate parameters (no longer in a single ``frozenset``), since they can differ due to exponential growth. The ancestral population size remains constant throughout time, so it is still grouped in a frozenset.
 
 Correspondingly, the constraints will reflect this change. If you want to peek at all of the constraints, you can run:
 
@@ -348,7 +375,7 @@ You would see that the start and end sizes for P0 and P1 are now independent var
 
 Inference using SFS-based methods in momi3
 ------------------------------------------
-momi3 provides a likelihood function based on the expected site frequency spectrum (SFS) under a demographic model. This makes it possible to perform demographic inference by optimizing model parameters to maximize the likelihood of the observed SFS.
+``momi3`` provides a likelihood function based on the expected site frequency spectrum (SFS) under a demographic model. This makes it possible to perform demographic inference by optimizing model parameters to maximize the likelihood of the observed SFS.
 
 As a first step, let’s focus on a single parameter: the migration rate from P0 to P1.
 
@@ -373,9 +400,10 @@ Using the simulated data and the original IWM model from the beginning of the tu
     esfs = ESFS(params)
     print(esfs)
 
-The full expected SFS of the IWM model with a modified 0.0002 as the migration rate from P0 to P1 is:
+The full expected SFS of the IWM model with a modified migration rate (0.0002) from P0 to P1 is:
 
 .. code-block:: python
+
     [[    0.      11881.158    3088.091     799.73804   197.59953]
      [11617.849    4561.4404   2405.3281   1276.4596    444.05203]
      [ 3169.2278   2360.8848   2093.3965   1545.6044    846.32776]
