@@ -134,7 +134,7 @@ Below is how this constraint is represented in the ``frozenset`` format:
     })
 
 
-By **construction** of the demographic model, these five parameters are constrained to be equal.
+By **construction** of the demographic model, together these five parameters are constrained to be equal and can be collectively thought of as the **timing** of an ancestral population splitting into subpopulations.
 
 Users are encouraged to modify these constraints according to their specific models and research hypotheses. For detailed instructions on modifying these constraints, please refer to the Tutorial documentation section.
 
