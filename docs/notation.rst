@@ -1,12 +1,14 @@
 Notation
 ========
 
+In momi3, all model parameters are represented as hierarchical paths that directly reference parameters within ``demes`` graph structures. Each parameter is identified by a structured path that navigates through the ``demes`` model components. This path-based representation provides a uniform interface for accessing all demographic parameters while maintaining compatibility with the underlying ``demes`` specification.
+
 Paths
 -----
 
-A **path** is a tuple of strings and integers that uniquely identifies a single parameter of the demographic model. These paths correspond to the nested dictionary structure used by msprime's Demography class and follow the same notation as the ''demes'' package.
+A **path** in ``momi3`` is a tuple of strings and integers that uniquely identifies a single parameter of a ``demes`` formatted demographic model. These paths correspond to the nested dictionary structure used by msprime's Demography class and follow the **same notation** as the ``demes`` package.
 
-Consider the following example:
+Consider the following isolation with migration model:
 
 .. code-block:: python
 
@@ -87,9 +89,9 @@ To access the ending size of the ancestral population ``anc`` in a ``demes`` mod
 
 .. code-block:: python
 
-    demo_dictionary['demes'][0]['epochs'][0]['end_size']
+    print(demo_dictionary['demes'][0]['epochs'][0]['end_size'])
     
-In momi3, this is ancestral population size parameter is represented as a path ("demes", 0, "epochs", 0, "end_size"). 
+In momi3, this ancestral population size parameter is represented as the path ("demes", 0, "epochs", 0, "end_size"). 
 
 To access the starting and ending time of the subpopulation ``P0`` in a ``demes`` model:
 
@@ -98,7 +100,7 @@ To access the starting and ending time of the subpopulation ``P0`` in a ``demes`
     print(demo_dictionary['demes'][1]['start_time'])
     print(demo_dictionary['demes'][1]['epochs'][0]['end_time'])
 
-In momi3, this parameter is represented as a path ("demes", 1, "start_time") and ("demes", 1, "epochs", 0, "end_time").
+In momi3, these two parameters are represented as paths ("demes", 1, "start_time") and ("demes", 1, "epochs", 0, "end_time").
 
 To access the migration rate from P0 to P1 in a ``demes`` model:
 
@@ -132,7 +134,7 @@ Below is how this constraint is represented in the ``frozenset`` format:
     })
 
 
-By **construction** of the demographic model, these five parameters are constrained to be equal. 
+By **construction** of the demographic model, these five parameters are constrained to be equal.
 
 Users are encouraged to modify these constraints according to their specific models and research hypotheses. For detailed instructions on modifying these constraints, please refer to the Tutorial documentation section.
 
