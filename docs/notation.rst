@@ -1,8 +1,6 @@
 Notation
 ========
 
-``momi3`` uses the following notation for demographic models.
-
 Paths
 -----
 
