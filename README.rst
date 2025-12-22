@@ -44,10 +44,10 @@ To navigate the ``momi3`` documentation, please refer to the ``Notation`` sectio
 
 Given any ``demes`` formatted demographic model:
 
-- The ``Tutorial`` goes over all the functions of ``momi3`` including how to output and modify model constraints, compute the expected SFS given a set of parameters and values, and compute the likelihood and its gradient.
+- The ``Tutorial`` goes over all the core functions of ``momi3`` including how to output and modify model constraints, compute the expected SFS, and compute the likelihood and its gradient.
 - The ``Random Projection`` section teaches users how to use random projections to compute an approximation of the full expected SFS and discusses its benefits.
-- The ``Optimization`` section demonstrates how to construct custom inference pipelines using scipy.minimize, highlighting momi3's modular design where each component — from objective functions to model constraints — can be tailored to specific research requirements. This flexibility enables researchers to implement specialized optimization strategies.
+- The ``Optimization`` section demonstrates how to construct custom inference pipelines using ``scipy.minimize``, highlighting momi3's modular design where each component — from objective functions to model constraints — can be tailored to specific research requirements. This flexibility enables researchers to implement specialized optimization strategies.
 
-The method is described in the following preprint:
+``momi3`` is described in the following preprint:
 
 Dilber, E., & Terhorst, J. (2024, March 29). Faster inference of complex demographic models from large allele frequency spectra [Preprint]. bioRxiv. https://doi.org/10.1101/2024.03.26.586844
