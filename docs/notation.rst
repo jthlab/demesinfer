@@ -1,7 +1,7 @@
 Notation
 ========
 
-In momi3, all model parameters are represented as hierarchical paths that directly reference parameters within ``demes`` graph structures. Each parameter is identified by a structured path that navigates through the ``demes`` model components. This path-based representation provides a uniform interface for accessing all demographic parameters while maintaining compatibility with the underlying ``demes`` specification.
+In ``momi3``, all model parameters are represented as hierarchical paths that directly reference parameters within ``demes`` graph structures. Each parameter is identified by a structured path that navigates through the ``demes`` model components. This path-based representation provides a uniform interface for accessing all demographic parameters while maintaining compatibility with the underlying ``demes`` specification.
 
 Paths
 -----
