@@ -1,14 +1,14 @@
 Notation
 ========
 
-Demesinfer (and the ``momi3`` module built on top of it) uses the following notation for demographic models.
+``momi3`` uses the following notation for demographic models.
 
 Paths
 -----
 
-A **path** is a tuple of strings and integers that uniquely identifies a single parameter of the population history. These paths correspond to the nested dictionary structure used by msprime's Demography class and follow the same notation as the ''demes'' package.
+A **path** is a tuple of strings and integers that uniquely identifies a single parameter of the demographic model. These paths correspond to the nested dictionary structure used by msprime's Demography class and follow the same notation as the ''demes'' package.
 
-To better understand this structure, consider the following example model:
+Consider the following example:
 
 .. code-block:: python
 
@@ -18,18 +18,16 @@ To better understand this structure, consider the following example model:
     demo.add_population(initial_size=5000, name="P0")
     demo.add_population(initial_size=5000, name="P1")
     demo.set_symmetric_migration_rate(populations=("P0", "P1"), rate=0.0001)
-    tmp = [f"P{i}" for i in range(2)]
-    demo.add_population_split(time=1000, derived=tmp, ancestral="anc")
-
-Note: This code can be cleaned up, there's some unnecessary lines like tmp. Shorten this code.
+    demo.add_population_split(time=1000, derived=[f"P{i}" for i in range(2)], ancestral="anc")
 
 To inspect, debug, and understand the demographic model's data structure, one can view the exact model with the following:
 
 .. code-block:: python
 
-    g.asdict()
+    demo_dictionary = demo.to_demes().asdict()
+    print(demo_dictionary)
 
-For our defined demes model, the output will be:
+For our defined ``demes`` model, the output will be:
 
 .. code-block:: python
     
@@ -87,33 +85,37 @@ This dictionary contains all demographic parameters in a hierarchical format, an
 
 **Examples:**
 
-Starting and ending size of the ancestral population ``anc`` (the first deme, index 0, with one epoch):
+To access the ending size of the ancestral population ``anc`` in a ``demes`` model:
 
 .. code-block:: python
 
-    ("demes", 0, "epochs", 0, "start_size")
-    ("demes", 0, "epochs", 0, "end_size")
+    demo_dictionary['demes'][0]['epochs'][0]['end_size']
+    
+In momi3, this is ancestral population size parameter is represented as a path ("demes", 0, "epochs", 0, "end_size"). 
 
-Starting and ending time of the first epoch of ``anc``:
+To access the starting and ending time of the subpopulation ``P0`` in a ``demes`` model:
 
 .. code-block:: python
 
-    ("demes", 0, "epochs", 0, "start_time")
-    ("demes", 0, "epochs", 0, "end_time")
+    print(demo_dictionary['demes'][1]['start_time'])
+    print(demo_dictionary['demes'][1]['epochs'][0]['end_time'])
 
-Migration rate between two populations in a simple IWM model:
+In momi3, this parameter is represented as a path ("demes", 1, "start_time") and ("demes", 1, "epochs", 0, "end_time").
+
+To access the migration rate from P0 to P1 in a ``demes`` model:
 
   .. code-block:: python
 
-      ("migrations", 0, "rate")
+    print(demo_dictionary['migrations'][0]['rate'])
 
-For more details regarding the construction of demographic models, please take a look at the tutorial.
+In momi3, this parameter is represented as a path ("migrations", 0, "rate").
+
+For more details regarding the construction of demographic models, please take a look at the Tutorial.
 
 Parameters
 ----------
 
-A **parameter** is a ``frozenset`` of multiple paths.  
-Using a ``frozenset`` means these paths are **enforced to take the same value** and are optimized together during inference.
+A **parameter** in ``momi3`` is a ``frozenset`` of multiple paths.  Using a ``frozenset`` means these paths are **enforced to take the same value** and are optimized together during inference. 
 
 **Example:**
 
@@ -132,8 +134,8 @@ Below is how this constraint is represented in the ``frozenset`` format:
     })
 
 
-Users are encouraged to modify these constraints according to their specific models and research hypotheses. 
+By **construction** of the demographic model, these five parameters are constrained to be equal. 
 
-For detailed instructions on modifying these constraints, please refer to the Tutorial documentation section.
+Users are encouraged to modify these constraints according to their specific models and research hypotheses. For detailed instructions on modifying these constraints, please refer to the Tutorial documentation section.
 
-Remember, you can always inspect the demographic model by calling the ``asdict()`` method on your ``demes`` model object (e.g., ``g.asdict()``) to understand its structure better.
+Remember, you can always inspect the demographic model by calling the ``asdict()`` method on your ``demes`` model object (e.g., ``demo.to_demes().asdict()``) to understand its structure better.
