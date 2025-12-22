@@ -245,6 +245,7 @@ The output:
 Depending on the numerical optimizer one would like to use, sometimes it's more preferable to express inequality constraints explicitly with a lower and upper bound. Using the ``alternative_constraint_rep`` function, we input the ``momi3`` inequality constraints and output an alternative representation that tells us: 
 
 .. code-block:: python
+
     Row 1: 0 <= x1 <= inf
     Row 2: 0 <= x2 <= 1
     Row 3: 0 <= x3 <= inf
