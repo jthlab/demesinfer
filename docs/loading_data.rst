@@ -1,5 +1,5 @@
 Loading Data for momi3
-----------------------
+======================
 
 The only required user specified data for any function in ``momi3`` is the **number of samples** in each population and the **observed frequency spectrum**. 
 
