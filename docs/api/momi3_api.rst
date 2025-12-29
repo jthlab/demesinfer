@@ -1,6 +1,7 @@
-momi3_api==============
+momi3 API Reference
+==============
 
-.. automodule:: momi3_api
+.. automodule:: demesinfer
    :no-members:
    :no-special-members:
 
