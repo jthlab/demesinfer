@@ -18,7 +18,7 @@ Contents
    Loading Data <loading_data>
    License <license>
    Authors <authors>
-   Module Reference <api/momi3_api>
+   Module Reference <api/index>
 
 
 
