@@ -2,6 +2,46 @@ import jax.numpy as jnp
 from jax.scipy.special import xlogy
 
 def sfs_loglik(afs, esfs, sequence_length=None, theta=None):
+    """
+    Compute the log-likelihood of an observed allele frequency spectrum.
+
+    This function evaluates the multinomial or Poisson log-likelihood of an
+    observed site frequency spectrum (AFS) given an expected spectrum (ESFS).
+
+    Parameters
+    ----------
+    afs : array_like
+        Observed allele frequency spectrum. The first and last entries
+        (monomorphic classes) are ignored.
+    esfs : array_like
+        Expected allele frequency spectrum. Must be the same shape as ``afs``.
+    sequence_length : int, optional
+        Total number of sites in the sequence. Required if ``theta`` is given.
+    theta : float, optional
+        Population-scaled mutation rate. If provided, a Poisson likelihood
+        is used; otherwise a multinomial likelihood is assumed.
+
+    Returns
+    -------
+    loglik : float
+        Log-likelihood of the observed spectrum given the expected spectrum.
+
+    Notes
+    -----
+    If ``theta`` is provided, the likelihood is computed as::
+
+        sum(-λ + afs * log(λ))
+
+    where ``λ = esfs * sequence_length * theta``.
+
+    Otherwise, the expected spectrum is normalized and a multinomial
+    likelihood is computed.
+
+    See Also
+    --------
+    demesinfer.fit.fit_model
+
+    """
     afs = afs.flatten()[1:-1]
     esfs = esfs.flatten()[1:-1]
     
