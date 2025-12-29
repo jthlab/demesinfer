@@ -319,7 +319,7 @@ To modify the inequalities, one can easily directly modify any ``constraints`` o
 
 Here we change the *first* parameter - the ancestral population size - of the *second* element - b_ineq - of the tuple (A_ineq, b_ineq).
 
-Note that ``frozenset`` parameters cannot be directly removed, since they are derived from the demographic model structure. However, frozenset parameters disappear and change when the model no longer forces equality during its construction. For example, if a population’s size is not constant across an epoch (e.g., exponential growth), its start_size and end_size become separate variables instead of a single tied frozenset.
+Note that ``frozenset`` parameters cannot be directly removed, since they are derived from the demographic model structure. However, frozenset parameters disappear and change when the model no longer forces equality during its **construction**. For example, if a population’s size is not constant across an epoch (e.g., exponential growth), its start_size and end_size become separate variables instead of a single tied frozenset.
 
 To show that, let's define a new demographic model where population size changes over time.
 
@@ -380,7 +380,7 @@ Inference using SFS-based methods in momi3
 
 As a first step, let’s focus on a single parameter: the migration rate from P0 to P1.
 
-Using the simulated data and the original IWM model from the beginning of the tutorial, we compute the observed allele frequency spectrum (AFS) using 4 haploid samples from each of populations P0 and P1. We then initialize an `ExpectedSFS` object, which defaults to parameter values matching the input demographic model object `demo`. To evaluate alternative parameter sets, we can compute the expected SFS by calling `ESFS(params)` with different parameter values as shown below.
+Using the simulated data and the original IWM model from the beginning of the tutorial, we compute the observed allele frequency spectrum (AFS) using 4 haploid samples from each of populations P0 and P1. We then initialize an ``ExpectedSFS`` object, which defaults to parameter values matching the input demographic model object ``demo``. To evaluate alternative parameter sets, we can compute the expected SFS by calling ``ESFS(params)`` with different parameter values as shown below.
 
 .. code-block:: python
 
@@ -412,6 +412,7 @@ The full expected SFS of the IWM model with a modified migration rate (0.0002) f
      [  207.27138   460.1628    863.6516   1437.3718      0.     ]]
 
 .. code-block:: python
+
     @jax.value_and_grad
     def ll_at(val):
         params = {param_key: val}
