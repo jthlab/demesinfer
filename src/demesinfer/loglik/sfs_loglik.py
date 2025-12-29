@@ -3,44 +3,48 @@ from jax.scipy.special import xlogy
 
 def sfs_loglik(afs, esfs, sequence_length=None, theta=None):
     """
-    Compute the log-likelihood of an observed allele frequency spectrum.
-
     This function evaluates the multinomial or Poisson log-likelihood of an
     observed site frequency spectrum (AFS) given an expected spectrum (ESFS).
+
+    By default, the sequence length and mutation rate (theta) are None, indicating
+    that the multinomial likelihood will be used. To use the Poisson likelihood, one must
+    provide BOTH the sequence length and mutation rate (theta).
 
     Parameters
     ----------
     afs : array_like
-        Observed allele frequency spectrum. The first and last entries
-        (monomorphic classes) are ignored.
+        Observed allele frequency spectrum
     esfs : array_like
-        Expected allele frequency spectrum. Must be the same shape as ``afs``.
+        Expected allele frequency spectrum. Must be the same shape as ``afs``
     sequence_length : int, optional
-        Total number of sites in the sequence. Required if ``theta`` is given.
+        Total number of sites in the sequence. Required if ``theta`` is given
     theta : float, optional
-        Population-scaled mutation rate. If provided, a Poisson likelihood
-        is used; otherwise a multinomial likelihood is assumed.
+        Population-scaled mutation rate. If provided, a sequence length must also 
+        be provided and the Poisson likelihood is used; 
+        otherwise a multinomial likelihood is assumed. 
 
     Returns
     -------
-    loglik : float
+    float
         Log-likelihood of the observed spectrum given the expected spectrum.
 
     Notes
     -----
-    If ``theta`` is provided, the likelihood is computed as::
+    In tskit, given a tree sequence, to obtain the afs one can use the function::
+        tree_sequence.allele_frequency_spectrum()
+    
+    To obtain the esfs, with ``momi3`` one must first initialize an ExpectedSFS object
+    with a demographic model and a dictionary of the number of samples used per population. 
+    Then one would input a dictionary of parameter values into the Expected SFS object::
+        ESFS = demesinfer.sfs.ExpectedSFS(demes_model.to_demes(), num_samples=samples_per_population)
+        params = {param_key: value}
+        esfs = ESFS(params)
 
-        sum(-λ + afs * log(λ))
-
-    where ``λ = esfs * sequence_length * theta``.
-
-    Otherwise, the expected spectrum is normalized and a multinomial
-    likelihood is computed.
-
+    Please refer to the tutorial for a specfic example.
+    
     See Also
     --------
-    demesinfer.fit.fit_model
-
+    demesinfer.sfs.ExpectedSFS
     """
     afs = afs.flatten()[1:-1]
     esfs = esfs.flatten()[1:-1]
