@@ -8,4 +8,4 @@ momi3 API Reference
 Public API
 ----------
 
-.. autofunction:: demesinfer.loglik.sfs_loglik
+.. autofunction:: demesinfer.loglik.sfs_loglik.sfs_loglik
