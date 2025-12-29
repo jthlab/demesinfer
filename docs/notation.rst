@@ -119,7 +119,7 @@ A **parameter** in ``momi3`` is a ``frozenset`` of multiple paths.  Using a ``fr
 
 **Example:**
 
-In the same model we defined earlier, the starting time of the three descendant populations should be equal to the ending time of the ancestral population. Additionally, the starting migration times must also be equal.
+In the same model we defined earlier, the starting time of the two descendant populations should be equal to the ending time of the ancestral population. Additionally, the starting migration times must also be equal.
 
 Below is how this constraint is represented in the ``frozenset`` format:
 
@@ -136,6 +136,6 @@ Below is how this constraint is represented in the ``frozenset`` format:
 
 By **construction** of the demographic model, together these five parameters are constrained to be equal and can be collectively thought of as the **timing** of an ancestral population splitting into subpopulations.
 
-Users are encouraged to modify these constraints according to their specific models and research hypotheses. For detailed instructions on modifying these constraints, please refer to the Tutorial documentation section.
+Users are encouraged to modify these constraints according to their specific models and research hypotheses. For detailed instructions on modifying these constraints, please refer to the ``Tutorial`` documentation section.
 
 Remember, you can always inspect the demographic model by calling the ``asdict()`` method on your ``demes`` model object (e.g., ``demo.to_demes().asdict()``) to understand its structure better.
