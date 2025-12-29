@@ -434,11 +434,9 @@ Using JAX's automatic differentiation capabilities via the ``@jax.value_and_grad
 
 The values themselves don’t mean much in isolation, but they demonstrate how to call the likelihood and obtain its gradient. This is the foundation for inference: we can now pass these functions to a numerical optimizer such as ``scipy.optimize.minimize`` to estimate the migration rate from P0 to P1.
 
-In the following examples, we will infer three types of parameters: population sizes, split times, and migration rates.
-
 **Note**: Inference with large sample sizes using SFS may be slow. Consider reducing the number of samples when running locally. For reference, in all the examples below, I used a sample size of 10 diploids and ran them locally on a MacBook with an M2 chip. The runtime is roughly around 10-15 seconds. Simply bumping this number to 20 diploids results in a 5 minute runtime.
 
-In the next section, to visually inspect how the likelihood changes (and assess reliability), we define a helper function ``plot_sfs_likelihood`` to plot the results. 
+In the next section, to visually inspect how the likelihood changes (and assess reliability), we define a helper function ``plot_sfs_likelihood`` to plot the results. We will infer three types of parameters: population sizes, split times, and migration rates.
 
 Estimating the ancestral population size
 ----------------------------------------
@@ -580,7 +578,7 @@ Poisson likelihood is also optimized near the real value of migration rate 0.000
 Visualizing the log-likelihood Landscape
 --------------------------------------
 
-One of the way to visualize this optimization process is to plot the log-likelihood surface
+One way to visualize this optimization process is to plot the log-likelihood surface
 with a contour plot. With the same principal as ``plot_sfs_likelihood``, one can optionally pass in ``sequence_length`` and ``theta`` to select between Poisson and Multinomial likelihood.
 
 The basic idea is simple, we pick two parameters to scan over a grid, and for each grid point, we evaluate the log-likelihood and compile them to be plotted into a contour plot.
