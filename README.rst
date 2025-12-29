@@ -38,13 +38,11 @@ This third version is a complete rewrite of the original momi and momi2 packages
 
 Additionally, momi3 is now being built as a core component of the broader ``demestats`` package, providing a more comprehensive framework for demographic inference.
 
-For installation instructions, a tutorial, and API reference, please refer to the documentation.
-
 To navigate the ``momi3`` documentation, please refer to the ``Notation`` section first to understand momi3's representation of parameters within a demographic model.
 
 Given any ``demes`` formatted demographic model:
 
-- The ``Tutorial`` goes over all the core functions of ``momi3`` including how to output and modify model constraints, compute the expected SFS, and compute the likelihood and its gradient.
+- The ``Tutorial`` goes over all of the core functions of ``momi3``, including how to output and modify model constraints, compute the expected SFS, and compute the likelihood and its gradient.
 - The ``Random Projection`` section teaches users how to use random projections to compute an approximation of the full expected SFS and discusses its benefits.
 - The ``Optimization`` section demonstrates how to construct custom inference pipelines using ``scipy.minimize``, highlighting momi3's modular design where each component — from objective functions to model constraints — can be tailored to specific research requirements. This flexibility enables researchers to implement specialized optimization strategies.
 
