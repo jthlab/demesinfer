@@ -5,9 +5,13 @@ Loglikelihood API Reference
    :no-members:
    :no-special-members:
 
-SFS Loglikelihood
+Full SFS Loglikelihood
 ----------
 
 .. autofunction:: demesinfer.loglik.sfs_loglik.sfs_loglik
+
+Projected SFS Loglikelihood
+----------
+
 .. autofunction:: demesinfer.loglik.sfs_loglik.projection_sfs_loglik
 
