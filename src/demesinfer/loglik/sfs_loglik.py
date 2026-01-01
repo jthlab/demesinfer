@@ -30,7 +30,8 @@ def sfs_loglik(afs, esfs, sequence_length=None, theta=None):
 
     Notes
     -----
-    In tskit, given a tree sequence, to obtain the afs one can use the function::
+    In tskit, given a tree sequence, to obtain the afs one can use the function
+    ::
         afs = tree_sequence.allele_frequency_spectrum(*options)
     
     To obtain the esfs, with ``momi3`` one must first initialize an ExpectedSFS object
