@@ -32,6 +32,7 @@ def constraints_for(et: EventTree, *vars_: Variable) -> ConstraintSet:
 
     Notes
     -----
+    Example:
     ::
         et = EventTree(demo.to_demes())
         et.variables
