@@ -64,13 +64,8 @@ def sfs_loglik(afs, esfs, sequence_length=None, theta=None):
 
 def projection_sfs_loglik(afs, tp, proj_dict, einsum_str, input_arrays, sequence_length=None, theta=None):
     """
-    Log-likelihood for projected site frequency spectrum.
-    
-    Computes Poisson(λ) or multinomial likelihood comparing observed AFS
-    to expected SFS projected via Einstein summation.
-
     This function evaluates the **projected** multinomial or Poisson log-likelihood of an
-    observed site frequency spectrum (AFS) given an expected spectrum (ESFS).
+    observed site frequency spectrum (AFS) given an expected spectrum (ESFS) via Einstein summation.
 
     By default, the sequence length and mutation rate (theta) are None, indicating
     that the multinomial likelihood will be used. To use the Poisson likelihood, one must
@@ -105,7 +100,8 @@ def projection_sfs_loglik(afs, tp, proj_dict, einsum_str, input_arrays, sequence
     the Einstein summation for tensor operations, and input_arrays are preprocessed arrays 
     that serve as inputs to the jax.numpy.einsum call, optimized for JAX’s just-in-time compilation
 
-    Example::
+    Example:
+    ::
         proj_dict, einsum_str, input_arrays = prepare_projection(afs, afs_samples, sequence_length, num_projections, seed)
         esfs_obj = ExpectedSFS(demo.to_demes(), num_samples=afs_samples)
         params = {param_key: val}
@@ -113,7 +109,7 @@ def projection_sfs_loglik(afs, tp, proj_dict, einsum_str, input_arrays, sequence
     
     Internally this function will call on demesinfer.sfs.ExpectedSFS.tensor_prod, which performs the projection
     operations on the site frequency spectrum.
-    
+
     Please refer to the tutorial for a specfic example, the above provided codes are just outlines of how to call on the functions.
     
     See Also
