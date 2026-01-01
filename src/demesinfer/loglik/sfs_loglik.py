@@ -115,9 +115,7 @@ def projection_sfs_loglik(afs, tp, proj_dict, einsum_str, input_arrays, sequence
     See Also
     --------
     demesinfer.sfs.ExpectedSFS
-
     demesinfer.sfs.ExpectedSFS.tensor_prod
-    
     demesinfer.sfs.sfs_loglik.prepare_projection
     """
     proj_esfs = tp(proj_dict)

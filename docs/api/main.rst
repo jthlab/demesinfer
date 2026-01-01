@@ -5,7 +5,7 @@ momi3 API Reference
    :no-members:
    :no-special-members:
 
-Public API
+Core Functions
 ----------
 
-.. autofunction:: demesinfer.loglik.sfs_loglik.sfs_loglik
+.. autofunction:: demesinfer.constr.constraints_for
