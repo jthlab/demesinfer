@@ -19,6 +19,26 @@ class ConstraintSet(TypedDict):
 
 
 def constraints_for(et: EventTree, *vars_: Variable) -> ConstraintSet:
+    """
+    Return a list of constraints for the given variables in the event tree.
+
+    Parameters:
+        et: The event tree to extract constraints from.
+        var: The variables for which to extract constraints, which must exist in `et.variables`.
+
+    Returns:
+        ConstraintSet: A dictionary containing the equality and inequality constraints,
+        as well as a mapping of columns of the constraint matrices to the variables.
+
+    Notes
+    -----
+    Example:
+    ::
+        et = EventTree(demo.to_demes())
+        et.variables
+
+    Please refer to the tutorial for a specfic example, the above provided codes are just outlines of how to call on the functions.
+    """
     missing = [v for v in vars_ if v not in et.variables]
     if missing:
         raise ValueError(
