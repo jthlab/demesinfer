@@ -47,7 +47,7 @@ def sfs_loglik(afs, esfs, sequence_length=None, theta=None):
     To compute the gradient, one can use ``jax.grad`` or ``jax.value_and_grad``. 
     All loglikelihood functions are compatible with ``jax``.
     
-    Please refer to the tutorial for a specfic example, the above provided codes are just outlines of how to call on the functions.
+    Please refer to the tutorial for a specific example, the above provided codes are just outlines of how to call on the functions.
     
     See Also
     --------
@@ -111,7 +111,7 @@ def projection_sfs_loglik(afs, tp, proj_dict, einsum_str, input_arrays, sequence
     Internally this function will call on demesinfer.sfs.ExpectedSFS.tensor_prod, which performs the projection
     operations on the site frequency spectrum.
 
-    Please refer to the tutorial for a specfic example, the above provided codes are just outlines of how to call on the functions.
+    Please refer to the tutorial for a specific example, the above provided codes are just outlines of how to call on the functions.
     
     See Also
     --------

@@ -37,7 +37,7 @@ def constraints_for(et: EventTree, *vars_: Variable) -> ConstraintSet:
         et = EventTree(demo.to_demes())
         et.variables
 
-    Please refer to the tutorial for a specfic example, the above provided codes are just outlines of how to call on the functions.
+    Please refer to the tutorial for a specific example, the above provided codes are just outlines of how to call on the functions.
     """
     missing = [v for v in vars_ if v not in et.variables]
     if missing:

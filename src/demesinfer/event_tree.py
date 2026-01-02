@@ -139,12 +139,12 @@ Node = int
 
 
 class EventTree:
-    """Build an event tree from a demes graph.
+    # """Build an event tree from a demes graph.
 
-    Args:
-        demo: a demes graph
-        events: a module containing event classes
-    """
+    # Args:
+    #     demo: a demes graph
+    #     events: a module containing event classes
+    # """
 
     def __init__(
         self,
@@ -152,6 +152,33 @@ class EventTree:
         events: ModuleType = demesinfer.events,
         _merge_contemp: bool = False,
     ):
+        """
+        Build an event tree from a demes graph.
+
+        Parameters:
+            demo: demes.Graph
+                a demes graph
+            events: ModuleType = demesinfer.events
+                a module containing event classes
+            _merge_contemp: bool = False,
+                Boolean necessary for tree creation
+
+        Returns:
+            EventTree: event tree built from a demes graph
+
+        Notes
+        -----
+        From a user perspective, understanding the underlying structure of an EventTree
+        is not necessary. The only function that a user would use is EventTree.variables
+        which lists out all the parameters in the event tree. 
+        
+        Example:
+        ::
+            et = EventTree(demo.to_demes())
+            et.variables
+
+        Please refer to the tutorial for a specfic example, the above provided codes are just outlines of how to call on the functions.
+        """
         # store passed parameters
         self._demo = demo
         self._events = events
