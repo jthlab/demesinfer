@@ -258,10 +258,10 @@ class EventTree:
     @cached_property
     def variables(self) -> Sequence[Variable]:
         """
-        List out **all** of the EventTree variables corresponding to ``demes`` graph
+        List out **all** of the EventTree variables corresponding to a ``demes`` graph
 
         Returns:
-            Sequence[Variable]: **All** associated EventTree variables given a ``demes``graph
+            Sequence[Variable]: **All** associated EventTree variables given a ``demes`` graph
 
         Notes
         -----

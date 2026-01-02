@@ -22,6 +22,40 @@ from .events.state import *
 
 @dataclass
 class ExpectedSFS:
+    """
+    Build an ExpectedSFS object that can be later used to compute the full expected
+    site frequency spectrum or the projected site frequency spectrum.
+
+    Parameters
+    ----------
+        demo : demes.Graph
+            A ``demes`` graph
+        num_samples : dict
+            A dictionary specifying how many haploids per population to use to compute
+            the expected SFS. The name of the
+            populations must match the exact names use in ``demo``.
+
+    Returns:
+        ExpectedSFS: an ExpectedSFS object used to compute expected site frequency spectrum
+
+    Notes
+    -----
+    From a user perspective, understanding the underlying structure of an ExpectedSFS object
+    is not necessary. The only functions that a user would use is ``ExpectedSFS.__call__``
+    which computes the full expected site frequency spectrum and ``ExpectedSFS.tensor_prod`` which
+    computes the projected site frequency spectrum. 
+    
+    Example:
+    ::
+       ESFS = ExpectedSFS(demo.to_demes(), num_samples=afs_samples)
+
+    Please refer to the tutorial for a specific example, the above provided codes are just outlines of how to call on the functions.
+    
+    See Also
+    --------
+    demesinfer.sfs.ExpectedSFS.__call__
+    demesinfer.sfs.ExpectedSFS.tensor_prod
+    """
     demo: demes.Graph
     num_samples: dict[str, Int[ScalarLike, ""]]
     et: event_tree.EventTree = field(init=False)
