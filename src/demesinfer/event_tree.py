@@ -142,12 +142,13 @@ class EventTree:
     """
     Build an event tree from a demes graph.
 
-    Parameters:
-        demo: demes.Graph
+    Parameters
+    ----------
+        demo : demes.Graph
             a demes graph
-        events: ModuleType = demesinfer.events
+        events : ModuleType, optional
             a module containing event classes
-        _merge_contemp: bool = False,
+        _merge_contemp : bool, optional
             Boolean necessary for tree creation
 
     Returns:
@@ -156,15 +157,26 @@ class EventTree:
     Notes
     -----
     From a user perspective, understanding the underlying structure of an EventTree
-    is not necessary. The only function that a user would use is EventTree.variables
-    which lists out all the parameters in the event tree. 
+    is not necessary. The only functions that a user would use is EventTree.variables
+    which lists out all the parameters in the event tree and EventTree.variable_for which
+    allows a user to input a ``demes`` path and find the associated EventTree parameter. 
     
     Example:
     ::
+        # EventTree.variables
         et = EventTree(demo.to_demes())
         et.variables
 
-    Please refer to the tutorial for a specfic example, the above provided codes are just outlines of how to call on the functions.
+        # EventTree.variable_for tutorial IWM example
+        parameters = [
+            ('demes', 0, 'epochs', 0, 'end_size'), # The ancestral population size
+            ('migrations', 0, 'rate'), # Rate of migration from P0 to P1
+            ('demes', 0, 'epochs', 0, 'end_time') # Time of divergence
+        ]
+
+        momi3_parameters = [et.variable_for(param) for param in parameters]
+
+    Please refer to the tutorial for a specific example, the above provided codes are just outlines of how to call on the functions.
     """
 
     def __init__(
