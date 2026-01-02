@@ -10,3 +10,4 @@ Core Functions
 
 .. autofunction:: demesinfer.constr.constraints_for
 .. autofunction:: demesinfer.event_tree.EventTree
+.. autofunction:: demesinfer.event_tree.EventTree.variables

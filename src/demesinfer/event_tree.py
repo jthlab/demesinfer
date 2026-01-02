@@ -145,7 +145,7 @@ class EventTree:
     Parameters
     ----------
         demo : demes.Graph
-            a demes graph
+            a ``demes`` graph
         events : ModuleType, optional
             a module containing event classes
         _merge_contemp : bool, optional
@@ -165,9 +165,9 @@ class EventTree:
     ::
         # EventTree.variables
         et = EventTree(demo.to_demes())
-        et.variables
+        print(et.variables)
 
-        # EventTree.variable_for tutorial IWM example
+        # EventTree.variable_for, example taken from tutorial
         parameters = [
             ('demes', 0, 'epochs', 0, 'end_size'), # The ancestral population size
             ('migrations', 0, 'rate'), # Rate of migration from P0 to P1
@@ -177,7 +177,13 @@ class EventTree:
         momi3_parameters = [et.variable_for(param) for param in parameters]
 
     Please refer to the tutorial for a specific example, the above provided codes are just outlines of how to call on the functions.
+    
+    See Also
+    --------
+    demesinfer.event_tree.EventTree.variable_for
+    demesinfer.event_tree.EventTree.variables
     """
+
 
     def __init__(
         self,
@@ -251,6 +257,21 @@ class EventTree:
 
     @cached_property
     def variables(self) -> Sequence[Variable]:
+        """
+        List out **all** of the EventTree variables corresponding to ``demes`` graph
+
+        Returns:
+            Sequence[Variable]: **All** associated EventTree variables given a ``demes``graph
+
+        Notes
+        -----
+        To use this function you must create an EventTree object. 
+        For more details see the EventTree API. 
+        
+        See Also
+        --------
+        demesinfer.event_tree.EventTree
+        """
         ret = defaultdict(list)
         dd = self.demodict
 
