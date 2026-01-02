@@ -569,7 +569,7 @@ To use the Poisson likelihood, this requires passing **BOTH** mutation rate ``th
         sequence_length=sequence_length,
     )
 
-.. image:: images/tutorial/IWM_tutorial_migration_poisson_likelihood.png.png
+.. image:: images/tutorial/IWM_tutorial_migration_poisson_likelihood.png
    :alt: Migration rate inference with Poisson likelihood
    :align: center
 
