@@ -82,12 +82,18 @@ To visualize the likelihood over one parameter using random projections, using t
 .. code-block:: python
 
   import jax.numpy as jnp
+  from demesinfer.plotting_util import plot_sfs_contour
+
   paths = {
       frozenset({("migrations", 0, "rate")}): 0.0001,
   }
   
   vec_values = jnp.linspace(0.00004, 0.00014, 10)
   result = plot_sfs_likelihood(demo.to_demes(), paths, vec_values, afs, afs_samples, num_projections=200, seed=5, projection=True)
+
+.. image:: images/random_projection/IWM_random_projection_migration_likelihood.png
+   :alt: Likelihood curve for random projection
+   :align: center
 
 If one wanted to use the Poisson likelihood we just pass in sequence length and mutation rate.
 
@@ -102,6 +108,10 @@ If one wanted to use the Poisson likelihood we just pass in sequence length and 
   theta = 1e-8
   result = plot_sfs_likelihood(demo.to_demes(), paths, vec_values, afs, afs_samples, num_projections=200, seed=5, projection=True, sequence_length=sequence_length, theta=theta)
   
+.. image:: images/random_projection/IWM_random_projection_migration_poisson_likelihood.png
+   :alt: Poisson likelihood curve for random projection
+   :align: center
+
 Similarily if one wanted to plot contour plots for visualizing two variables at once, we use the same ``plot_sfs_contour`` and pass in an argument ``projection``.
 
 .. code-block:: python
@@ -123,5 +133,9 @@ Similarily if one wanted to plot contour plots for visualizing two variables at 
   param2_vals = jnp.linspace(4000, 6000, 10)
   
   result = plot_sfs_contour(demo.to_demes(), paths, param1_vals, param2_vals, afs, afs_samples, projection=True, num_projections=200, seed=5)
+
+.. image:: images/random_projection/IWM_random_projection_contour1.png
+   :alt: Countour plot for random projection
+   :align: center
 
 These examples highlight that the projected SFS can capture similar signals as the full expected SFS, please refer to the preprint for further details.

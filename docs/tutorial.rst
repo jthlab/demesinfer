@@ -38,7 +38,7 @@ We can visualize the demographic model using ``demesdraw``:
 
     demesdraw.tubes(g)
 
-.. image:: images/demo.png
+.. image:: images/tutorial/demo.png
    :alt: Demographic model visualization
    :align: center
 
@@ -462,7 +462,7 @@ With an initial guess of 4000, we evaluate the likelihood over a grid of values 
     vec_values = jnp.linspace(4000, 6000, 50)
     result = plot_sfs_likelihood(g, paths, vec_values, afs, afs_samples)
 
-.. image:: images/pop_size.png
+.. image:: images/tutorial/IWM_tutorial_anc_popsize_likelihood.png
    :alt: Ancestral population size inference
    :align: center
 
@@ -487,7 +487,7 @@ Again, starting from 4000, we search over values between 4000 and 6000:
     vec_values = jnp.linspace(4000, 6000, 50)
     result = plot_sfs_likelihood(g, paths, vec_values, afs, afs_samples)
 
-.. image:: images/pop_size2.png
+.. image:: images/tutorial/IWM_tutorial_P0_popsize_likelihood.png
    :alt: Descendant population size inference
    :align: center
 
@@ -514,7 +514,7 @@ This parameter is shared across multiple paths (two deme start times, one epoch 
     vec_values = jnp.linspace(500, 1500, 50)
     result = plot_sfs_likelihood(g, paths, vec_values, afs, afs_samples)
 
-.. image:: images/split_time.png
+.. image:: images/tutorial/IWM_tutorial_divergence_time_likelihood.png
    :alt: Split time inference
    :align: center
 
@@ -535,7 +535,7 @@ Finally, we infer the migration rate between the two descendant populations:
     vec_values = jnp.linspace(0.00005, 0.0002, 10)
     result = plot_sfs_likelihood(g, paths, vec_values, afs, afs_samples)
 
-.. image:: images/migration_rate.png
+.. image:: images/tutorial/IWM_tutorial_migration_likelihood.png
    :alt: Migration rate inference
    :align: center
 
@@ -569,7 +569,7 @@ To use the Poisson likelihood, this requires passing **BOTH** mutation rate ``th
         sequence_length=sequence_length,
     )
 
-.. image:: images/pois_migration.png
+.. image:: images/tutorial/IWM_tutorial_migration_poisson_likelihood.png.png
    :alt: Migration rate inference with Poisson likelihood
    :align: center
 
@@ -603,7 +603,7 @@ The basic idea is simple, we pick two parameters to scan over a grid, and for ea
    
    result = plot_sfs_contour(demo.to_demes(), paths, param1_vals, param2_vals, afs, afs_samples)
 
-.. image:: images/Contour.png
+.. image:: images/tutorial/IWM_tutorial_contour1.png
    :alt: Contour plot of log-likelihood surface
    :align: center
 
@@ -685,7 +685,7 @@ We now consider a more complex demographic model that includes population size c
     p = demo3.to_demes()
     demesdraw.tubes(p, log_time=True)
 
-.. image:: images/pop_size_change.png
+.. image:: images/tutorial/pop_size_change.png
     :alt: Population size change model visualization
     :align: center
 
@@ -724,7 +724,7 @@ An admixture event means that, going backwards in time, lineages from ADMIX are 
 
 Again, we can visualize the demographic model using ``demesdraw``:
 
-.. image:: images/pop_admixture.png
+.. image:: images/tutorial/pop_admixture.png
    :alt: Admixture model visualization
    :align: center
 
