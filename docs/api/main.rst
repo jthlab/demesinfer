@@ -9,4 +9,4 @@ Core Functions
 ----------
 
 .. autofunction:: demesinfer.constr.constraints_for
-.. autofunctino:: demesinfer.event_tree.EventTree
+.. autofunction:: demesinfer.event_tree.EventTree
